@@ -35,13 +35,22 @@ app = FastAPI(
 )
 
 # Configure CORS
+from fastapi.middleware.cors import CORSMiddleware
+
+# List all allowed frontend URLs
+allowed_origins = [
+    "https://test-bitscan.vercel.app",
+    "https://www.test-bitscan.vercel.app",  # in case you use www
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=allowed_origins,   # exact match only
+    allow_credentials=True,          # needed if sending cookies or auth headers
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # explicit methods
+    allow_headers=["Authorization", "Content-Type"],            # explicit headers
 )
+
 
 # Include API routes BEFORE static file mounts
 app.include_router(api_router, prefix="/api/v1", tags=["BitScan API"])
