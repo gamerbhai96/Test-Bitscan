@@ -1355,7 +1355,7 @@ const App: React.FC = () => {
                             key={index}
                             id={`faq-item-${index}`}
                             expanded={expandedFAQ === index}
-                            onChange={(event, isExpanded) => setExpandedFAQ(isExpanded ? index : false)}
+                            onChange={( isExpanded) => setExpandedFAQ(isExpanded ? index : false)}
                             sx={{
                               mb: 2,
                               background: isDarkMode 
