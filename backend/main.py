@@ -13,12 +13,18 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Import our modules from backend
-from backend.api.routes import router as api_router
-from backend.api.timeseries import router as ts_router
-from backend.blockchain.analyzer import BlockchainAnalyzer
-from backend.ml.enhanced_fraud_detector import EnhancedFraudDetector
-from backend.ml.fraud_detector import FraudDetector
+# Add parent directory to Python path for imports (works in both dev and production)
+from pathlib import Path
+import sys
+parent_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(parent_dir))
+
+# Import our modules
+from api.routes import router as api_router
+from api.timeseries import router as ts_router
+from blockchain.analyzer import BlockchainAnalyzer
+from ml.enhanced_fraud_detector import EnhancedFraudDetector
+from ml.fraud_detector import FraudDetector
 
 app = FastAPI(
     title="BitScan - Bitcoin Scam Pattern Analyzer",
