@@ -1,0 +1,62 @@
+{
+  "elliptic": {
+    "url": "https://www.kaggle.com/datasets/ellipticco/elliptic-data-set",
+    "description": "Bitcoin transactions labeled licit/illicit - Gold standard dataset",
+    "priority": "HIGH",
+    "features": [
+      "transaction_features",
+      "temporal_patterns",
+      "graph_structure"
+    ]
+  },
+  "suspicious_wallets": {
+    "url": "https://www.kaggle.com/datasets/larysa21/bitcoin-wallets-data-with-fraudulent-activities",
+    "description": "Suspicious Bitcoin Wallets with Fraudulent Activities",
+    "priority": "HIGH",
+    "features": [
+      "wallet_behavior",
+      "transaction_patterns",
+      "fraud_labels"
+    ]
+  },
+  "cryptoscam": {
+    "url": "https://www.kaggle.com/datasets/zongaobian/cryptocurrency-scam-dataset",
+    "description": "Cryptocurrency Scam Dataset (CryptoScamDB mirror)",
+    "priority": "HIGH",
+    "features": [
+      "scam_types",
+      "address_clusters",
+      "temporal_analysis"
+    ]
+  },
+  "bitcoinheist": {
+    "url": "https://www.kaggle.com/datasets/sapere0/bitcoinheist-ransomware-dataset",
+    "description": "BitcoinHeist Ransomware Dataset - Ransomware address families",
+    "priority": "MEDIUM",
+    "features": [
+      "ransomware_families",
+      "payment_patterns",
+      "victim_analysis"
+    ]
+  },
+  "babd13": {
+    "url": "https://www.kaggle.com/datasets/lemonx/babd13",
+    "description": "Bitcoin Address Behavior Dataset (BABD-13)",
+    "priority": "MEDIUM",
+    "features": [
+      "address_behavior",
+      "entity_classification",
+      "activity_patterns"
+    ]
+  },
+  "augmented_elliptic": {
+    "url": "https://www.kaggle.com/datasets/pablodejuanfidalgo/augmented-elliptic-data-set",
+    "description": "Augmented Elliptic Data Set with extended features",
+    "priority": "MEDIUM",
+    "features": [
+      "extended_features",
+      "graph_embeddings",
+      "temporal_analysis"
+    ]
+  }
+}

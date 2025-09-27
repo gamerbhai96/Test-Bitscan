@@ -1,0 +1,286 @@
+{
+  "model_metrics": {
+    "random_forest": {
+      "accuracy": 0.9986842105263158,
+      "f1_score": 0.9968652037617555,
+      "auc_score": 1.0,
+      "cv_f1_mean": 1.0,
+      "cv_f1_std": 0.0,
+      "classification_report": {
+        "0.0": {
+          "precision": 0.9983361064891847,
+          "recall": 1.0,
+          "f1-score": 0.9991673605328892,
+          "support": 600.0
+        },
+        "1.0": {
+          "precision": 1.0,
+          "recall": 0.99375,
+          "f1-score": 0.9968652037617555,
+          "support": 160.0
+        },
+        "accuracy": 0.9986842105263158,
+        "macro avg": {
+          "precision": 0.9991680532445923,
+          "recall": 0.996875,
+          "f1-score": 0.9980162821473224,
+          "support": 760.0
+        },
+        "weighted avg": {
+          "precision": 0.9986863998598826,
+          "recall": 0.9986842105263158,
+          "f1-score": 0.9986826959494925,
+          "support": 760.0
+        }
+      },
+      "training_samples": 4800
+    },
+    "xgboost": {
+      "accuracy": 0.9986842105263158,
+      "f1_score": 0.9968652037617555,
+      "auc_score": 1.0,
+      "cv_f1_mean": 0.9997918834547346,
+      "cv_f1_std": 0.0004162330905307154,
+      "classification_report": {
+        "0.0": {
+          "precision": 0.9983361064891847,
+          "recall": 1.0,
+          "f1-score": 0.9991673605328892,
+          "support": 600.0
+        },
+        "1.0": {
+          "precision": 1.0,
+          "recall": 0.99375,
+          "f1-score": 0.9968652037617555,
+          "support": 160.0
+        },
+        "accuracy": 0.9986842105263158,
+        "macro avg": {
+          "precision": 0.9991680532445923,
+          "recall": 0.996875,
+          "f1-score": 0.9980162821473224,
+          "support": 760.0
+        },
+        "weighted avg": {
+          "precision": 0.9986863998598826,
+          "recall": 0.9986842105263158,
+          "f1-score": 0.9986826959494925,
+          "support": 760.0
+        }
+      },
+      "training_samples": 4800
+    },
+    "logistic": {
+      "accuracy": 1.0,
+      "f1_score": 1.0,
+      "auc_score": 1.0,
+      "cv_f1_mean": 1.0,
+      "cv_f1_std": 0.0,
+      "classification_report": {
+        "0.0": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 600.0
+        },
+        "1.0": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 160.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 760.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 760.0
+        }
+      },
+      "training_samples": 4800
+    },
+    "isolation_forest": {
+      "accuracy": 0.9092105263157895,
+      "f1_score": 0.8207792207792208,
+      "auc_score": 0.5,
+      "cv_f1_mean": NaN,
+      "cv_f1_std": NaN,
+      "classification_report": {
+        "0.0": {
+          "precision": 0.9962616822429906,
+          "recall": 0.8883333333333333,
+          "f1-score": 0.9392070484581497,
+          "support": 600.0
+        },
+        "1.0": {
+          "precision": 0.7022222222222222,
+          "recall": 0.9875,
+          "f1-score": 0.8207792207792208,
+          "support": 160.0
+        },
+        "accuracy": 0.9092105263157895,
+        "macro avg": {
+          "precision": 0.8492419522326065,
+          "recall": 0.9379166666666667,
+          "f1-score": 0.8799931346186853,
+          "support": 760.0
+        },
+        "weighted avg": {
+          "precision": 0.934358638028092,
+          "recall": 0.9092105263157895,
+          "f1-score": 0.9142748742099542,
+          "support": 760.0
+        }
+      },
+      "training_samples": 4800
+    }
+  },
+  "feature_importance": {
+    "random_forest": {
+      "transaction_count": 0.1012962312020706,
+      "total_received_btc": 0.063157716792047,
+      "total_sent_btc": 0.1013604682763399,
+      "current_balance_btc": 0.023579507391333025,
+      "average_transaction_value": 0.0,
+      "median_transaction_value": 0.0,
+      "transaction_value_std": 0.0,
+      "min_transaction_value": 0.0,
+      "max_transaction_value": 0.0,
+      "activity_span_days": 0.0,
+      "transactions_per_day": 0.09922468457297111,
+      "velocity_btc_per_tx": 0.021844124041912237,
+      "turnover_ratio": 0.0,
+      "retention_ratio": 0.0,
+      "unique_input_addresses": 0.0641211392681522,
+      "unique_output_addresses": 0.09897393081545262,
+      "input_output_ratio": 0.0,
+      "degree_centrality": 0.0,
+      "betweenness_centrality": 0.0,
+      "closeness_centrality": 0.0,
+      "eigenvector_centrality": 0.0,
+      "clustering_coefficient": 0.0,
+      "average_interval_hours": 0.1658734176396406,
+      "median_interval_hours": 0.0,
+      "interval_std_hours": 0.0,
+      "burst_count": 0.07871760264919388,
+      "max_burst_size": 0.0,
+      "regularity_score": 0.0,
+      "coefficient_of_variation": 0.022792325088988465,
+      "input_gini_coefficient": 0.0,
+      "output_gini_coefficient": 0.05441039731306737,
+      "top_input_concentration": 0.0689806465376721,
+      "top_output_concentration": 0.010694125432861435,
+      "rapid_movement_count": 0.0,
+      "round_amounts_ratio": 0.024973682978297426,
+      "mixing_suspicious_score": 0.0,
+      "high_fan_out_ratio": 0.0,
+      "cluster_size": 0.0,
+      "community_modularity": 0.0,
+      "transaction_density": 0.0,
+      "value_flow_variance": 0.0,
+      "address_reuse_frequency": 0.0,
+      "output_script_diversity": 0.0,
+      "time_concentration_score": 0.0
+    },
+    "xgboost": {
+      "transaction_count": 0.28768807649612427,
+      "total_received_btc": 0.05903029814362526,
+      "total_sent_btc": 0.18533644080162048,
+      "current_balance_btc": 0.0008258685702458024,
+      "average_transaction_value": 0.0,
+      "median_transaction_value": 0.0,
+      "transaction_value_std": 0.0,
+      "min_transaction_value": 0.0,
+      "max_transaction_value": 0.0,
+      "activity_span_days": 0.0,
+      "transactions_per_day": 0.03381948173046112,
+      "velocity_btc_per_tx": 0.0,
+      "turnover_ratio": 0.0,
+      "retention_ratio": 0.0,
+      "unique_input_addresses": 0.006572845857590437,
+      "unique_output_addresses": 0.11255212128162384,
+      "input_output_ratio": 0.0,
+      "degree_centrality": 0.0,
+      "betweenness_centrality": 0.0,
+      "closeness_centrality": 0.0,
+      "eigenvector_centrality": 0.0,
+      "clustering_coefficient": 0.0,
+      "average_interval_hours": 0.206199049949646,
+      "median_interval_hours": 0.0,
+      "interval_std_hours": 0.0,
+      "burst_count": 0.04984632134437561,
+      "max_burst_size": 0.0,
+      "regularity_score": 0.0,
+      "coefficient_of_variation": 0.02481904625892639,
+      "input_gini_coefficient": 0.0,
+      "output_gini_coefficient": 0.025377929210662842,
+      "top_input_concentration": 0.0021708018612116575,
+      "top_output_concentration": 0.002489405917003751,
+      "rapid_movement_count": 0.0,
+      "round_amounts_ratio": 0.003272260306403041,
+      "mixing_suspicious_score": 0.0,
+      "high_fan_out_ratio": 0.0,
+      "cluster_size": 0.0,
+      "community_modularity": 0.0,
+      "transaction_density": 0.0,
+      "value_flow_variance": 0.0,
+      "address_reuse_frequency": 0.0,
+      "output_script_diversity": 0.0,
+      "time_concentration_score": 0.0
+    }
+  },
+  "feature_names": [
+    "transaction_count",
+    "total_received_btc",
+    "total_sent_btc",
+    "current_balance_btc",
+    "average_transaction_value",
+    "median_transaction_value",
+    "transaction_value_std",
+    "min_transaction_value",
+    "max_transaction_value",
+    "activity_span_days",
+    "transactions_per_day",
+    "velocity_btc_per_tx",
+    "turnover_ratio",
+    "retention_ratio",
+    "unique_input_addresses",
+    "unique_output_addresses",
+    "input_output_ratio",
+    "degree_centrality",
+    "betweenness_centrality",
+    "closeness_centrality",
+    "eigenvector_centrality",
+    "clustering_coefficient",
+    "average_interval_hours",
+    "median_interval_hours",
+    "interval_std_hours",
+    "burst_count",
+    "max_burst_size",
+    "regularity_score",
+    "coefficient_of_variation",
+    "input_gini_coefficient",
+    "output_gini_coefficient",
+    "top_input_concentration",
+    "top_output_concentration",
+    "rapid_movement_count",
+    "round_amounts_ratio",
+    "mixing_suspicious_score",
+    "high_fan_out_ratio",
+    "cluster_size",
+    "community_modularity",
+    "transaction_density",
+    "value_flow_variance",
+    "address_reuse_frequency",
+    "output_script_diversity",
+    "time_concentration_score"
+  ],
+  "threshold": 0.5,
+  "trained_timestamp": "2025-09-22T20:27:25.812224"
+}

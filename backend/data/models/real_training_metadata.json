@@ -1,0 +1,37 @@
+{
+  "training_results": {
+    "random_forest": {
+      "f1_score": 0.966113914924297,
+      "roc_auc": 0.9938008533653847,
+      "accuracy": 0.9672093023255814
+    },
+    "gradient_boosting": {
+      "f1_score": 0.96995640110979,
+      "roc_auc": 0.9951715624999999,
+      "accuracy": 0.9706201550387596
+    },
+    "ensemble": {
+      "f1_score": 0.9691952559102125,
+      "roc_auc": 0.9949483173076923,
+      "accuracy": 0.97
+    }
+  },
+  "dataset_info": {
+    "source": "real_datasets",
+    "total_samples": 64500,
+    "fraud_samples": 32000,
+    "fraud_percentage": 49.6124031007752,
+    "datasets_used": {
+      "suspicious_wallets": 17500,
+      "cryptoscam": 17000,
+      "bitcoinheist": 15000,
+      "elliptic": 15000
+    },
+    "feature_columns": [
+      "total_received",
+      "total_sent",
+      "balance",
+      "transaction_count"
+    ]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "training_results": {
+    "enhanced_rf": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0
+    },
+    "enhanced_xgb": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0
+    },
+    "lightgbm": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0
+    },
+    "gradient_boost": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0
+    },
+    "neural_net": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0
+    },
+    "extra_trees": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0
+    },
+    "isolation_forest": {
+      "accuracy": 0.6,
+      "roc_auc": 0.83,
+      "precision": 1.0,
+      "recall": 0.2,
+      "f1_score": 0.3333333333333333
+    },
+    "ensemble": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0
+    }
+  },
+  "model_version": "enhanced_v2.0",
+  "features_count": 20,
+  "training_date": "2025-09-22T20:38:45.285330"
+}
