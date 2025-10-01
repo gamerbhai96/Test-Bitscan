@@ -117,7 +117,7 @@ const drawProfessionalFooter = (doc: jsPDF, pageNum: number, totalPages: number)
 };
 
 /**
- * Draw a professional metric card
+ * Draw a professional metric card with enhanced styling
  */
 const drawMetricCard = (
   doc: jsPDF,
@@ -129,27 +129,42 @@ const drawMetricCard = (
   value: string,
   color: readonly [number, number, number]
 ): void => {
-  // Card background
-  doc.setFillColor(...REPORT_COLORS.white);
+  // Card background with subtle shadow effect
+  doc.setFillColor(250, 250, 250);
   doc.setDrawColor(230, 235, 244);
-  doc.setLineWidth(0.5);
-  doc.roundedRect(x, y, width, height, 3, 3, 'FD');
+  doc.setLineWidth(0.3);
+  doc.roundedRect(x + 0.5, y + 0.5, width, height, 4, 4, 'FD');
 
-  // Color accent bar
+  // Main card background
+  doc.setFillColor(...REPORT_COLORS.white);
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.8);
+  doc.roundedRect(x, y, width, height, 4, 4, 'FD');
+
+  // Enhanced color accent bar with gradient effect
   doc.setFillColor(...color);
-  doc.roundedRect(x, y, 4, height, 2, 2, 'F');
+  doc.roundedRect(x, y, 6, height, 3, 3, 'F');
 
-  // Label
+  // Secondary accent for depth
+  doc.setFillColor(Math.max(0, color[0] - 20), Math.max(0, color[1] - 20), Math.max(0, color[2] - 20));
+  doc.roundedRect(x, y + height - 3, 6, 3, 0, 0, 'F');
+
+  // Label with improved typography
   doc.setTextColor(...REPORT_COLORS.muted);
-  doc.setFontSize(8);
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
-  doc.text(label.toUpperCase(), x + 8, y + 8);
+  doc.text(label.toUpperCase(), x + 10, y + 8);
 
-  // Value
+  // Value with enhanced styling
   doc.setTextColor(...REPORT_COLORS.dark);
-  doc.setFontSize(14);
+  doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
-  doc.text(value, x + 8, y + height - 8);
+  doc.text(value, x + 10, y + height - 6);
+
+  // Subtle border accent
+  doc.setDrawColor(...color);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(x + 0.5, y + 0.5, width - 1, height - 1, 3.5, 3.5, 'S');
 };
 
 /**
@@ -170,6 +185,60 @@ const drawSectionHeader = (doc: jsPDF, title: string, y: number): number => {
   doc.line(margin, y + 6, Math.min(margin + 40, pageWidth - margin), y + 6);
 
   return y + 12;
+};
+
+/**
+ * Format Bitcoin address for display with truncation
+ */
+const formatBitcoinAddress = (address: string, maxLength: number = 40): string => {
+  if (address.length <= maxLength) return address;
+  const prefixLength = Math.floor((maxLength - 3) / 2);
+  const suffixLength = maxLength - 3 - prefixLength;
+  return `${address.substring(0, prefixLength)}...${address.substring(address.length - suffixLength)}`;
+};
+
+/**
+ * Draw wallet address section with proper formatting
+ */
+const drawWalletAddressSection = (doc: jsPDF, address: string, label: string, currentY: number): number => {
+  const { margin, pageWidth } = LAYOUT;
+
+  // Address background box
+  doc.setFillColor(...REPORT_COLORS.light);
+  doc.roundedRect(margin, currentY, pageWidth - margin * 2, 15, 3, 3, 'F');
+
+  // Label
+  doc.setTextColor(...REPORT_COLORS.primary);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text(label, margin + 4, currentY + 10);
+
+  // Format and display address
+  doc.setTextColor(...REPORT_COLORS.dark);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+
+  const maxAddressWidth = pageWidth - margin * 2 - 60; // Leave space for label
+  const formattedAddress = formatBitcoinAddress(address, 50); // Allow up to 50 chars before truncation
+
+  // Check if address fits, if not, split into lines
+  const addressWidth = doc.getTextWidth(formattedAddress);
+  if (addressWidth <= maxAddressWidth) {
+    doc.text(formattedAddress, margin + 60, currentY + 10);
+  } else {
+    // Split long address into two lines
+    const midPoint = Math.floor(formattedAddress.length / 2);
+    const firstLine = formattedAddress.substring(0, midPoint);
+    const secondLine = formattedAddress.substring(midPoint);
+
+    doc.text(firstLine, margin + 60, currentY + 7);
+    doc.text(secondLine, margin + 60, currentY + 13);
+
+    // Increase height for two-line address
+    return currentY + 20;
+  }
+
+  return currentY + 18;
 };
 
 /**
@@ -198,11 +267,11 @@ export const downloadExcelReport = (analysis: AnalysisResponse, address: string)
   const summaryData = [
     ['BitScan Analysis Report'],
     [''],
-    ['Address', analysis.address],
+    ['Subject Wallet Address', formatBitcoinAddress(address, 60)],
     ['Risk Score', `${(analysis.risk_score * 100).toFixed(2)}%`],
     ['Risk Level', analysis.risk_level],
     ['Confidence', `${(analysis.confidence * 100).toFixed(2)}%`],
-    ['Is Flagged', analysis.is_flagged ? 'Yes' : 'No'],
+    ['Status', analysis.is_flagged ? 'FLAGGED' : 'CLEAR'],
     ['Transaction Count', analysis.analysis_summary.transaction_count],
     ['Total Received (BTC)', analysis.analysis_summary.total_received_btc],
     ['Total Sent (BTC)', analysis.analysis_summary.total_sent_btc],
@@ -263,19 +332,11 @@ export const downloadPdfReport = (analysis: AnalysisResponse, address: string) =
   let currentY = drawProfessionalHeader(doc, 'BitScan Analysis Report', 'Cryptocurrency Risk Intelligence Report');
 
   // Address information section
-  doc.setFillColor(...REPORT_COLORS.light);
-  doc.roundedRect(LAYOUT.margin, currentY, LAYOUT.pageWidth - LAYOUT.margin * 2, 12, 2, 2, 'F');
-  doc.setTextColor(...REPORT_COLORS.dark);
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text('WALLET ADDRESS:', LAYOUT.margin + 4, currentY + 8);
-  doc.setFont('helvetica', 'normal');
-  doc.text(address, LAYOUT.margin + 35, currentY + 8);
-  currentY += 18;
+  currentY = drawWalletAddressSection(doc, address, 'WALLET ADDRESS:', currentY);
 
   // Executive Summary Cards
   const cardWidth = (LAYOUT.pageWidth - LAYOUT.margin * 2 - 12) / 2; // Two cards per row
-  const cardHeight = 28;
+  const cardHeight = 32; // Increased height for better visual balance
 
   // Risk Score Card
   const riskColor = analysis.risk_score > 0.7 ? REPORT_COLORS.danger :
@@ -465,22 +526,14 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
   let currentY = drawProfessionalHeader(doc, 'BitScan Analysis Report', 'Cryptocurrency Risk Intelligence Report');
 
   // Address information section
-  doc.setFillColor(...REPORT_COLORS.light);
-  doc.roundedRect(LAYOUT.margin, currentY, LAYOUT.pageWidth - LAYOUT.margin * 2, 12, 2, 2, 'F');
-  doc.setTextColor(...REPORT_COLORS.dark);
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SUBJECT WALLET ADDRESS:', LAYOUT.margin + 4, currentY + 8);
-  doc.setFont('helvetica', 'normal');
-  doc.text(address, LAYOUT.margin + 45, currentY + 8);
-  currentY += 18;
+  currentY = drawWalletAddressSection(doc, address, 'SUBJECT WALLET ADDRESS:', currentY);
 
   // Executive Summary Section
   currentY = drawSectionHeader(doc, 'Executive Summary', currentY);
 
   // Executive Summary Cards - Professional Layout
   const cardWidth = (LAYOUT.pageWidth - LAYOUT.margin * 2 - 16) / 2; // Two cards per row
-  const cardHeight = 30;
+  const cardHeight = 35; // Enhanced height for professional appearance
 
   // Primary Risk Metrics
   const riskColor = analysis.risk_score > 0.7 ? REPORT_COLORS.danger :

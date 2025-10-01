@@ -316,7 +316,133 @@ async def health_check():
         logger.error(f"Health check failed: {e}")
         raise HTTPException(status_code=503, detail=f"Service unhealthy: {str(e)}")
 
-@router.get("/analyze/{address}", response_model=AddressAnalysisResponse, tags=["Analysis"])
+@router.get("/analyze-fast/{address}", response_model=AddressAnalysisResponse, tags=["Analysis"])
+async def analyze_address_fast(
+    address: str = Path(..., description="Bitcoin address to analyze"),
+    include_detailed: bool = Query(default=False, description="Include detailed analysis data"),
+    model_name: str = Query(default="ensemble", description="ML model to use for prediction")
+):
+    """
+    Fast analysis endpoint optimized for production use with shorter timeouts
+    """
+    try:
+        initialize_services()
+
+        if not _is_valid_bitcoin_address(address):
+            raise HTTPException(status_code=400, detail="Invalid Bitcoin address format")
+
+        logger.info(f"Starting FAST analysis for address: {address}")
+
+        # Use much shorter timeout for production (8 seconds total)
+        try:
+            analysis_result = await asyncio.wait_for(
+                blockchain_analyzer.analyze_address_comprehensive(address, depth=1),
+                timeout=8.0  # Much shorter timeout for fast response
+            )
+        except asyncio.TimeoutError:
+            logger.warning(f"Fast analysis timeout for {address} - using quick fallback")
+            # Quick fallback - just get basic address info
+            client = blockchain_analyzer._get_appropriate_client(address)
+            try:
+                basic_info = await asyncio.wait_for(client.get_address_info(address), timeout=3.0)
+
+                if basic_info.get('error') == 'rate_limit_exceeded':
+                    raise HTTPException(
+                        status_code=429,
+                        detail={
+                            "error": "API Rate Limit Exceeded",
+                            "message": "BlockCypher API rate limits exceeded. Please wait before trying again.",
+                            "retry_after": "5 minutes"
+                        }
+                    )
+
+                tx_count = basic_info.get('n_tx', 0)
+                balance = basic_info.get('balance', 0) / 1e8
+                total_received = basic_info.get('total_received', 0) / 1e8
+
+                if tx_count == 0 and balance == 0:
+                    analysis_result = {
+                        'address': address,
+                        'network': blockchain_analyzer._detect_network(address),
+                        'basic_metrics': {
+                            'transaction_count': 0,
+                            'total_received_btc': 0,
+                            'total_sent_btc': 0,
+                            'balance_btc': 0
+                        },
+                        'fraud_signals': {
+                            'overall_fraud_score': 0.0,
+                            'risk_level': 'MINIMAL',
+                            'detailed_flags': ['Address has no transaction history']
+                        }
+                    }
+                else:
+                    analysis_result = {
+                        'address': address,
+                        'network': blockchain_analyzer._detect_network(address),
+                        'basic_metrics': {
+                            'transaction_count': tx_count,
+                            'total_received_btc': total_received,
+                            'total_sent_btc': total_received - balance,
+                            'balance_btc': balance
+                        },
+                        'fraud_signals': {
+                            'overall_fraud_score': 0.2,
+                            'risk_level': 'LOW',
+                            'detailed_flags': ['Fast analysis - basic data only']
+                        }
+                    }
+            except asyncio.TimeoutError:
+                raise HTTPException(
+                    status_code=504,
+                    detail={
+                        "error": "Fast Analysis Timeout",
+                        "message": "Analysis taking too long. Please try the standard endpoint.",
+                        "address": address,
+                        "suggestion": "Use /analyze/ endpoint for comprehensive analysis"
+                    }
+                )
+
+        # Quick ML prediction
+        fraud_prediction = fraud_detector.predict_fraud_probability(analysis_result, model_name=model_name)
+
+        # Simplified response for fast endpoint
+        response_data = {
+            "address": address,
+            "risk_score": fraud_prediction.get('fraud_probability', 0.5),
+            "risk_level": fraud_prediction.get('risk_level', 'UNKNOWN'),
+            "is_flagged": fraud_prediction.get('is_fraud_predicted', False),
+            "confidence": fraud_prediction.get('confidence', 0.0),
+            "fraud_probability": fraud_prediction.get('fraud_probability'),
+            "analysis_summary": {
+                "transaction_count": analysis_result.get('basic_metrics', {}).get('transaction_count', 0),
+                "total_received_btc": analysis_result.get('basic_metrics', {}).get('total_received_btc', 0),
+                "total_sent_btc": analysis_result.get('basic_metrics', {}).get('total_sent_btc', 0),
+                "current_balance_btc": analysis_result.get('basic_metrics', {}).get('balance_btc', 0),
+                "data_limitations": {
+                    "fast_mode": True,
+                    "reduced_analysis": True,
+                    "note": "Fast analysis mode - limited data processing"
+                }
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+
+        if include_detailed:
+            response_data["detailed_analysis"] = {
+                "blockchain_analysis": convert_to_serializable(analysis_result),
+                "ml_prediction": convert_to_serializable(fraud_prediction)
+            }
+
+        return AddressAnalysisResponse(**response_data)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in fast analysis for address {address}: {e}")
+        raise HTTPException(status_code=500, detail=f"Fast analysis error: {str(e)}")
+
+
 async def analyze_address(
     address: str = Path(..., description="Bitcoin address to analyze"),
     depth: int = Query(default=2, ge=1, le=5, description="Analysis depth"),

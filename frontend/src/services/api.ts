@@ -5,9 +5,14 @@ import type { WalletTimeSeriesResponse } from '../types/timeseries';
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
+// Detect if we're in production (Vercel) and adjust timeout accordingly
+const isProduction = import.meta.env.PROD;
+const VERCEL_TIMEOUT = 12000; // 12 seconds for Vercel (well under 15s limit)
+const LOCAL_TIMEOUT = 45000; // 45 seconds for localhost
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 45000, // 45 seconds timeout
+  timeout: isProduction ? VERCEL_TIMEOUT : LOCAL_TIMEOUT, // Adaptive timeout
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -28,7 +33,10 @@ apiClient.interceptors.response.use(
     } else if (error.response?.status === 500) {
       throw new Error('Internal server error. Please try again later.');
     } else if (error.code === 'ECONNABORTED') {
-      throw new Error('Request timeout. The analysis is taking longer than expected. This may happen due to high address activity, API rate limits, or network congestion. Please try again later for a more comprehensive analysis.');
+      const timeoutMessage = isProduction
+        ? 'Request timeout. The analysis is taking longer than expected due to high server load. Please try again in a few minutes.'
+        : 'Request timeout. The analysis is taking longer than expected. This may happen due to high address activity, API rate limits, or network congestion. Please try again later for a more comprehensive analysis.';
+      throw new Error(timeoutMessage);
     } else if (!error.response) {
       throw new Error('Network error. Please check your connection and try again.');
     }
@@ -36,18 +44,20 @@ apiClient.interceptors.response.use(
     throw error;
   }
 );
-
 export class BitScanAPI {
   /**
    * Analyze a Bitcoin address for fraud indicators
    */
   static async analyzeAddress(
-    address: string, 
+    address: string,
     includeDetailed: boolean = true
   ): Promise<AnalysisResponse> {
     try {
+      // Use fast endpoint in production to avoid Vercel timeouts
+      const endpoint = isProduction ? `/analyze-fast/${address}` : `/analyze/${address}`;
+
       const response = await apiClient.get<AnalysisResponse>(
-        `/analyze/${address}?include_detailed=${includeDetailed}`
+        `${endpoint}?include_detailed=${includeDetailed}`
       );
       return response.data;
     } catch (error) {
