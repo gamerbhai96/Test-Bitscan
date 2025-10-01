@@ -443,6 +443,7 @@ async def analyze_address_fast(
         raise HTTPException(status_code=500, detail=f"Fast analysis error: {str(e)}")
 
 
+@router.get("/analyze/{address}", response_model=AddressAnalysisResponse, tags=["Analysis"])
 async def analyze_address(
     address: str = Path(..., description="Bitcoin address to analyze"),
     depth: int = Query(default=2, ge=1, le=5, description="Analysis depth"),
