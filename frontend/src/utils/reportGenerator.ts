@@ -580,6 +580,8 @@ export const downloadPdfReport = async (analysis: AnalysisResponse, address: str
  */
 export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, address: string) => {
   const doc = initProfessionalDocument();
+
+  // Only show header on first page
   let currentY = await drawProfessionalHeader(doc, 'Blockchain Security Intelligence', 'Advanced Risk Assessment Report');
 
   // Address information section
@@ -587,6 +589,12 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
 
   // Add professional spacing before summary section
   currentY += 10;
+
+  // Check if we need a page break before Executive Summary
+  if (currentY > 250) { // If we're too close to bottom of page
+    doc.addPage();
+    currentY = LAYOUT.margin; // Reset to top of new page (no header)
+  }
 
   // Executive Summary Section
   currentY = drawSectionHeader(doc, 'Executive Summary', currentY);
@@ -630,6 +638,12 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
                 'TOTAL TRANSACTIONS', analysis.analysis_summary.transaction_count.toLocaleString(), REPORT_COLORS.primary);
 
   currentY += cardHeight + 20;
+
+  // Check for page break before Risk Intelligence Section
+  if (currentY > 230) { // If we're getting close to bottom of page
+    doc.addPage();
+    currentY = LAYOUT.margin; // Reset to top of new page (no header)
+  }
 
   // Risk Intelligence Section - Always include this section
   currentY = drawSectionHeader(doc, 'Risk Intelligence Assessment', currentY);
@@ -684,6 +698,11 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
 
   // Mitigating Factors Section
   if (analysis.positive_indicators && analysis.positive_indicators.length > 0) {
+    // Check for page break before Mitigating Factors
+    if (currentY > 230) {
+      doc.addPage();
+      currentY = LAYOUT.margin;
+    }
     currentY = drawSectionHeader(doc, 'Mitigating Factors', currentY);
 
     // Add descriptive text
@@ -727,6 +746,11 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
   }
 
   // Data Quality & Methodology Section
+  // Check for page break before Data Quality section
+  if (currentY > 230) {
+    doc.addPage();
+    currentY = LAYOUT.margin;
+  }
   currentY = drawSectionHeader(doc, 'Data Quality & Methodology', currentY);
 
   // Add methodology text
@@ -777,6 +801,11 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
   }
 
   // Professional Recommendations Section
+  // Check for page break before Recommendations
+  if (currentY > 230) {
+    doc.addPage();
+    currentY = LAYOUT.margin;
+  }
   currentY = drawSectionHeader(doc, 'Recommendations', currentY);
 
   doc.setFontSize(10);
