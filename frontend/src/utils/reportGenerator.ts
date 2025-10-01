@@ -4,18 +4,19 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 /**
- * Professional color palette for reports
+ * Professional color palette matching SecureDApp's blockchain security brand
  */
 const REPORT_COLORS = {
-  primary: [37, 99, 235],      // Blue
-  secondary: [79, 70, 229],    // Indigo
-  success: [16, 185, 129],     // Emerald
-  warning: [245, 158, 11],     // Amber
-  danger: [239, 68, 68],       // Red
-  muted: [71, 85, 105],        // Slate
-  light: [241, 245, 249],      // Light gray background
+  primary: [30, 58, 138],      // SecureDApp professional dark blue #1e3a8a
+  secondary: [14, 165, 233],   // SecureDApp sky blue #0ea5e9
+  success: [34, 197, 94],      // Professional green
+  warning: [251, 146, 60],     // Professional amber
+  danger: [239, 68, 68],       // Professional red
+  muted: [71, 85, 105],        // Cool slate gray
+  light: [248, 250, 252],      // Very light background
   white: [255, 255, 255],
-  dark: [15, 23, 42]           // Dark slate
+  dark: [15, 23, 42],          // Professional dark slate
+  accent: [139, 92, 246]       // Professional purple accent
 } as const;
 
 /**
@@ -39,81 +40,128 @@ const initProfessionalDocument = (): jsPDF => {
 };
 
 /**
- * Draw professional header with company branding
+ * Add SecureDApp logo to the PDF document using the local PNG file
  */
-const drawProfessionalHeader = (doc: jsPDF, title: string, subtitle: string): number => {
+const addSecureDAppLogo = async (doc: jsPDF, x: number, y: number, width: number, height: number): Promise<void> => {
+  try {
+    // Use the local PNG logo (CORS-protected SVG not accessible)
+    const response = await fetch('/logo.png');
+    const blob = await response.blob();
+
+    // Convert blob to base64
+    const reader = new FileReader();
+    const base64Promise = new Promise<string>((resolve, reject) => {
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1]; // Remove data:image/png;base64, prefix
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    const base64 = await base64Promise;
+    const dataUrl = `data:image/png;base64,${base64}`;
+
+    // Add the local PNG logo with proper dimensions (matching website size)
+    doc.addImage(dataUrl, 'PNG', x, y, width, height);
+  } catch (error) {
+    console.warn('Failed to load SecureDApp logo:', error);
+
+    // Fallback: Draw a professional text-based logo placeholder
+    doc.setFillColor(30, 58, 138);
+    doc.setDrawColor(30, 58, 138);
+    doc.roundedRect(x, y, width, height, 4, 4, 'FD');
+
+    // Add SecureDApp text
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SECUREDAPP', x + width / 2, y + height / 2, { align: 'center' });
+  }
+};
+
+/**
+ * Draw professional header matching SecureDApp website layout (clean and simple)
+ */
+const drawProfessionalHeader = async (doc: jsPDF, title: string, subtitle: string): Promise<number> => {
   const { margin, pageWidth } = LAYOUT;
 
-  // Header background
-  doc.setFillColor(...REPORT_COLORS.primary);
+  // Clean professional header background
+  doc.setFillColor(30, 58, 138); // Professional dark blue #1e3a8a
   doc.rect(0, 0, pageWidth, LAYOUT.headerHeight, 'F');
 
-  // Company logo area (placeholder for logo)
-  doc.setFillColor(...REPORT_COLORS.white);
-  doc.setDrawColor(...REPORT_COLORS.white);
-  doc.roundedRect(margin, 8, 15, 15, 2, 2, 'F');
+  // Simple accent line at bottom
+  doc.setFillColor(14, 165, 233); // Sky blue accent #0ea5e9
+  doc.rect(0, LAYOUT.headerHeight - 2, pageWidth, 2, 'F');
 
-  // Logo text placeholder
-  doc.setTextColor(...REPORT_COLORS.primary);
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('BS', margin + 7.5, 17, { align: 'center' });
+  // Logo stretched horizontally to utilize left space better
+  const logoWidth = 55; // Wider horizontal stretch for better space utilization
+  const logoHeight = 30; // Maintain reasonable height
+  const logoX = margin;
+  const logoY = (LAYOUT.headerHeight - logoHeight) / 2; // Perfectly centered vertically
 
-  // Title
+  await addSecureDAppLogo(doc, logoX, logoY, logoWidth, logoHeight);
+
+  // Adjust text positioning to accommodate wider logo
+  const textStartX = logoX + logoWidth + 18;
+
+  // Professional title typography
   doc.setTextColor(...REPORT_COLORS.white);
-  doc.setFontSize(18);
+  doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text(title, margin + 25, 15);
+  doc.text(title, textStartX, LAYOUT.headerHeight / 2);
 
-  // Subtitle
-  doc.setFontSize(10);
+  // Clean subtitle
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text(subtitle, margin + 25, 23);
+  doc.text(subtitle, textStartX, LAYOUT.headerHeight / 2 + 6);
 
-  // Date and time
+  // Minimal date on right
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  const timeStr = now.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit'
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
   });
 
   doc.setFontSize(8);
-  doc.setTextColor(240, 240, 240);
-  doc.text(`${dateStr} at ${timeStr}`, pageWidth - margin, 12, { align: 'right' });
+  doc.setTextColor(220, 230, 255);
+  doc.text(dateStr, pageWidth - margin, LAYOUT.headerHeight / 2, { align: 'right' });
 
   return LAYOUT.headerHeight + 5;
 };
 
 /**
- * Draw professional footer with page numbers
+ * Draw professional footer with SecureDApp branding
  */
 const drawProfessionalFooter = (doc: jsPDF, pageNum: number, totalPages: number): void => {
   const { margin, pageWidth, pageHeight, footerHeight } = LAYOUT;
 
-  // Footer background
-  doc.setFillColor(...REPORT_COLORS.light);
+  // Footer background with SecureDApp blue
+  doc.setFillColor(0, 123, 255);
   doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, 'F');
 
   // Footer line
-  doc.setDrawColor(...REPORT_COLORS.primary);
+  doc.setDrawColor(0, 188, 212);
   doc.setLineWidth(0.3);
   doc.line(margin, pageHeight - footerHeight, pageWidth - margin, pageHeight - footerHeight);
 
-  // Page number
-  doc.setTextColor(...REPORT_COLORS.muted);
+  // Page number with SecureDApp styling
+  doc.setTextColor(240, 248, 255);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
 
-  // Disclaimer
+  // SecureDApp branding
   doc.setFontSize(7);
-  doc.setTextColor(...REPORT_COLORS.muted);
-  doc.text('CONFIDENTIAL - For authorized personnel only', margin, pageHeight - 5);
+  doc.setTextColor(200, 220, 255);
+  doc.text('Powered by SecureDApp.io', margin, pageHeight - 5);
+
+  // Professional disclaimer
+  doc.setFontSize(6);
+  doc.setTextColor(180, 200, 255);
+  doc.text('Blockchain Security Intelligence Report - For Professional Use Only', pageWidth / 2, pageHeight - 5, { align: 'center' });
 };
 
 /**
@@ -168,28 +216,39 @@ const drawMetricCard = (
 };
 
 /**
- * Draw a professional section header with enhanced styling
+ * Draw a professional section header with enhanced styling (prevents duplicates)
  */
 const drawSectionHeader = (doc: jsPDF, title: string, y: number): number => {
   const { margin, pageWidth } = LAYOUT;
+
+  // Check if we're at the very top of a page (likely a page break issue)
+  const currentPage = doc.getCurrentPageInfo().pageNumber;
+  const pageHeight = LAYOUT.pageHeight;
+  const headerHeight = LAYOUT.headerHeight + LAYOUT.footerHeight;
+
+  // If we're too close to the top of the page, add some spacing to prevent header duplication
+  let adjustedY = y;
+  if (y < headerHeight + 20) { // If we're too close to the header area
+    adjustedY = headerHeight + 20; // Move down
+  }
 
   // Section title with enhanced styling
   doc.setTextColor(...REPORT_COLORS.primary);
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text(title, margin, y + 3);
+  doc.text(title, margin, adjustedY + 3);
 
-  // Professional underline with gradient effect
-  doc.setDrawColor(...REPORT_COLORS.primary);
-  doc.setLineWidth(1.0);
-  doc.line(margin, y + 8, Math.min(margin + 45, pageWidth - margin), y + 8);
+  // Professional underline with SecureDApp gradient effect
+  doc.setDrawColor(0, 123, 255);
+  doc.setLineWidth(1.2);
+  doc.line(margin, adjustedY + 8, Math.min(margin + 50, pageWidth - margin), adjustedY + 8);
 
-  // Subtle secondary line for depth
-  doc.setDrawColor(59, 130, 246, 0.3); // Lighter blue with alpha
-  doc.setLineWidth(0.5);
-  doc.line(margin, y + 10, Math.min(margin + 35, pageWidth - margin), y + 10);
+  // Secondary accent line
+  doc.setDrawColor(0, 188, 212);
+  doc.setLineWidth(0.6);
+  doc.line(margin, adjustedY + 10, Math.min(margin + 40, pageWidth - margin), adjustedY + 10);
 
-  return y + 15;
+  return adjustedY + 15;
 };
 
 /**
@@ -328,15 +387,15 @@ export const downloadExcelReport = (analysis: AnalysisResponse, address: string)
   }
 
   // Download the file
-  writeFile(wb, `BitScan_Report_${address.substring(0, 8)}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  writeFile(wb, `SecureDApp_Security_Report_${address.substring(0, 8)}_${new Date().toISOString().slice(0, 10)}.xlsx`);
 };
 
 /**
  * Generate and download clean executive-level PDF report
  */
-export const downloadPdfReport = (analysis: AnalysisResponse, address: string) => {
+export const downloadPdfReport = async (analysis: AnalysisResponse, address: string) => {
   const doc = initProfessionalDocument();
-  let currentY = drawProfessionalHeader(doc, 'BitScan Analysis Report', 'Cryptocurrency Risk Intelligence Report');
+  let currentY = await drawProfessionalHeader(doc, 'Blockchain Security Analysis', 'Comprehensive Risk Intelligence Report');
 
   // Address information section
   currentY = drawWalletAddressSection(doc, address, 'WALLET ADDRESS:', currentY);
@@ -525,7 +584,7 @@ export const downloadPdfReport = (analysis: AnalysisResponse, address: string) =
   }
 
   // Save the professional report
-  doc.save(`BitScan_Professional_Report_${address.substring(0, 8)}_${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`SecureDApp_Security_Analysis_${address.substring(0, 8)}_${new Date().toISOString().slice(0, 10)}.pdf`);
 };
 
 /**
@@ -533,7 +592,7 @@ export const downloadPdfReport = (analysis: AnalysisResponse, address: string) =
  */
 export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, address: string) => {
   const doc = initProfessionalDocument();
-  let currentY = drawProfessionalHeader(doc, 'BitScan Analysis Report', 'Cryptocurrency Risk Intelligence Report');
+  let currentY = await drawProfessionalHeader(doc, 'Blockchain Security Intelligence', 'Advanced Risk Assessment Report');
 
   // Address information section
   currentY = drawWalletAddressSection(doc, address, 'SUBJECT WALLET ADDRESS:', currentY);
@@ -584,11 +643,11 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
 
   currentY += cardHeight + 20;
 
-  // Risk Intelligence Section
-  if (analysis.risk_factors && analysis.risk_factors.length > 0) {
-    currentY = drawSectionHeader(doc, 'Risk Intelligence Assessment', currentY);
+  // Risk Intelligence Section - Always include this section
+  currentY = drawSectionHeader(doc, 'Risk Intelligence Assessment', currentY);
 
-    // Add descriptive text
+  if (analysis.risk_factors && analysis.risk_factors.length > 0) {
+    // Add descriptive text for risk factors
     doc.setFontSize(10);
     doc.setTextColor(...REPORT_COLORS.muted);
     doc.setFont('helvetica', 'normal');
@@ -627,7 +686,7 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
 
     currentY = ((doc as any).lastAutoTable?.finalY ?? currentY) + 15;
   } else {
-    currentY = drawSectionHeader(doc, 'Risk Intelligence Assessment', currentY);
+    // No risk factors found - show positive message
     doc.setFontSize(10);
     doc.setTextColor(...REPORT_COLORS.success);
     doc.setFont('helvetica', 'normal');
@@ -767,5 +826,5 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
   }
 
   // Save the clean professional report
-  doc.save(`BitScan_Executive_Report_${address.substring(0, 8)}_${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`SecureDApp_Intelligence_Report_${address.substring(0, 8)}_${new Date().toISOString().slice(0, 10)}.pdf`);
 };

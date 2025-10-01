@@ -166,33 +166,33 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
         <CssBaseline />
-        
+
         {/* Clean Background without animations */}
-        <Box 
-          sx={{ 
+        <Box
+          sx={{
             minHeight: '100vh',
-            background: isDarkMode 
-              ? 'linear-gradient(135deg, #0c1426 0%, #1a2332 50%, #0f1419 100%)'
-              : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%)',
+            background: isDarkMode
+              ? 'linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #0f1419 100%)'
+              : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%)',
             position: 'relative'
           }}
         >
           <Container maxWidth="lg" sx={{ py: 4, position: 'relative' }}>
             {/* Professional Header with Controls */}
             <Fade in timeout={1000}>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 mb: 6,
-                background: isDarkMode 
-                  ? 'rgba(255, 255, 255, 0.05)' 
+                background: isDarkMode
+                  ? 'rgba(255, 255, 255, 0.05)'
                   : 'rgba(255, 255, 255, 0.25)',
                 backdropFilter: 'blur(20px)',
                 borderRadius: '20px',
                 p: 3,
                 border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: isDarkMode 
+                boxShadow: isDarkMode
                   ? '0 8px 32px rgba(0, 0, 0, 0.3)'
                   : '0 8px 32px rgba(102, 126, 234, 0.15)'
               }}>
@@ -210,9 +210,9 @@ const App: React.FC = () => {
                     <SearchIcon sx={{ fontSize: 32, color: 'white' }} />
                   </Avatar>
                   <Box>
-                    <Typography 
-                      variant="h4" 
-                      component="h1" 
+                    <Typography
+                      variant="h4"
+                      component="h1"
                       sx={{
                         background: 'linear-gradient(45deg, #2563eb 0%, #0891b2 50%, #06b6d4 100%)',
                         backgroundClip: 'text',
@@ -226,9 +226,9 @@ const App: React.FC = () => {
                     >
                       BitScan
                     </Typography>
-                    <Typography 
-                      variant="subtitle1" 
-                      sx={{ 
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
                         color: 'text.secondary',
                         fontWeight: 400,
                         fontFamily: '"Inter", "Roboto", sans-serif',
@@ -246,7 +246,7 @@ const App: React.FC = () => {
                   <IconButton
                     onClick={() => setShowFAQ(!showFAQ)}
                     sx={{
-                      background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+                      background: 'linear-gradient(135deg, #ff9800 0%, #f44336 100%)',
                       color: 'white',
                       width: 48,
                       height: 48,
@@ -254,9 +254,9 @@ const App: React.FC = () => {
                       backdropFilter: 'blur(10px)',
                       borderRadius: '12px',
                       '&:hover': {
-                        background: 'linear-gradient(135deg, #d97706 0%, #ea580c 100%)',
+                        background: 'linear-gradient(135deg, #f57c00 0%, #d32f2f 100%)',
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 20px rgba(245, 158, 11, 0.4)'
+                        boxShadow: '0 8px 20px rgba(255, 152, 0, 0.4)'
                       },
                       transition: 'all 0.3s ease'
                     }}
@@ -268,8 +268,8 @@ const App: React.FC = () => {
                   <IconButton
                     onClick={() => setShowHistory(!showHistory)}
                     sx={{
-                      background: scanHistory.length > 0 
-                        ? 'linear-gradient(135deg, #059669 0%, #10b981 100%)'
+                      background: scanHistory.length > 0
+                        ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
                         : 'rgba(255, 255, 255, 0.1)',
                       color: 'white',
                       width: 48,
@@ -280,10 +280,10 @@ const App: React.FC = () => {
                       position: 'relative',
                       '&:hover': {
                         background: scanHistory.length > 0
-                          ? 'linear-gradient(135deg, #047857 0%, #059669 100%)'
+                          ? 'linear-gradient(135deg, #43a047 0%, #4caf50 100%)'
                           : 'rgba(255, 255, 255, 0.15)',
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 20px rgba(5, 150, 105, 0.3)'
+                        boxShadow: '0 8px 20px rgba(76, 175, 80, 0.3)'
                       },
                       transition: 'all 0.3s ease'
                     }}
@@ -294,7 +294,7 @@ const App: React.FC = () => {
                         position: 'absolute',
                         top: -6,
                         right: -6,
-                        background: '#ef4444',
+                        background: '#f44336',
                         color: 'white',
                         borderRadius: '50%',
                         width: 20,
@@ -315,7 +315,7 @@ const App: React.FC = () => {
                   <IconButton
                     onClick={toggleTheme}
                     sx={{
-                      background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                      background: 'linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%)',
                       color: 'white',
                       width: 48,
                       height: 48,
@@ -323,9 +323,9 @@ const App: React.FC = () => {
                       backdropFilter: 'blur(10px)',
                       borderRadius: '12px',
                       '&:hover': {
-                        background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                        background: 'linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%)',
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 20px rgba(99, 102, 241, 0.4)'
+                        boxShadow: '0 8px 20px rgba(156, 39, 176, 0.4)'
                       },
                       transition: 'all 0.3s ease'
                     }}
@@ -351,8 +351,8 @@ const App: React.FC = () => {
                         p: 3,
                         minWidth: 180,
                         textAlign: 'center',
-                        background: isDarkMode 
-                          ? 'rgba(255, 255, 255, 0.05)' 
+                        background: isDarkMode
+                          ? 'rgba(255, 255, 255, 0.05)'
                           : 'rgba(255, 255, 255, 0.9)',
                         backdropFilter: 'blur(10px)',
                         border: '1px solid rgba(255, 255, 255, 0.1)',
