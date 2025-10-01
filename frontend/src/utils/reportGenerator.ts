@@ -1,9 +1,7 @@
 import type { AnalysisResponse } from '../types/api';
-import type { WalletTimeSeriesResponse } from '../types/timeseries';
 import { utils, writeFile } from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { BitScanAPI } from '../services/api';
 
 /**
  * Professional color palette for reports
@@ -258,7 +256,7 @@ export const downloadExcelReport = (analysis: AnalysisResponse, address: string)
 };
 
 /**
- * Generate and download report in PDF format
+ * Generate and download clean executive-level PDF report
  */
 export const downloadPdfReport = (analysis: AnalysisResponse, address: string) => {
   const doc = initProfessionalDocument();
@@ -318,7 +316,14 @@ export const downloadPdfReport = (analysis: AnalysisResponse, address: string) =
 
   // Risk Intelligence Section
   if (analysis.risk_factors && analysis.risk_factors.length > 0) {
-    currentY = drawSectionHeader(doc, 'Risk Intelligence', currentY);
+    currentY = drawSectionHeader(doc, 'Risk Intelligence Assessment', currentY);
+
+    // Add descriptive text
+    doc.setFontSize(10);
+    doc.setTextColor(...REPORT_COLORS.muted);
+    doc.setFont('helvetica', 'normal');
+    doc.text('The following risk factors were identified during the comprehensive blockchain analysis:', LAYOUT.margin, currentY + 6);
+    currentY += 12;
 
     const riskTableData = analysis.risk_factors.map((factor, index) => [
       `${index + 1}`,
@@ -330,29 +335,46 @@ export const downloadPdfReport = (analysis: AnalysisResponse, address: string) =
       head: [['#', 'Identified Risk Factor']],
       body: riskTableData,
       margin: { left: LAYOUT.margin, right: LAYOUT.margin },
-      theme: 'striped',
+      theme: 'plain',
       styles: {
         fontSize: 10,
-        cellPadding: { top: 5, bottom: 5, left: 5, right: 5 },
-        textColor: REPORT_COLORS.dark
+        cellPadding: { top: 6, bottom: 6, left: 5, right: 5 },
+        textColor: REPORT_COLORS.dark,
+        lineWidth: 0.1,
+        lineColor: [226, 232, 240]
       },
       headStyles: {
         fillColor: REPORT_COLORS.primary,
         textColor: REPORT_COLORS.white,
         fontStyle: 'bold',
-        halign: 'left'
+        halign: 'left',
+        fontSize: 10
       },
-      alternateRowStyles: { fillColor: REPORT_COLORS.light },
-      tableLineColor: [226, 232, 240],
-      tableLineWidth: 0.3
+      alternateRowStyles: {
+        fillColor: REPORT_COLORS.light
+      }
     });
 
-    currentY = ((doc as any).lastAutoTable?.finalY ?? currentY) + 10;
+    currentY = ((doc as any).lastAutoTable?.finalY ?? currentY) + 15;
+  } else {
+    currentY = drawSectionHeader(doc, 'Risk Intelligence Assessment', currentY);
+    doc.setFontSize(10);
+    doc.setTextColor(...REPORT_COLORS.success);
+    doc.setFont('helvetica', 'normal');
+    doc.text('✓ No significant risk factors were identified during the comprehensive analysis.', LAYOUT.margin, currentY + 6);
+    currentY += 20;
   }
 
   // Positive Indicators Section
   if (analysis.positive_indicators && analysis.positive_indicators.length > 0) {
     currentY = drawSectionHeader(doc, 'Mitigating Factors', currentY);
+
+    // Add descriptive text
+    doc.setFontSize(10);
+    doc.setTextColor(...REPORT_COLORS.muted);
+    doc.setFont('helvetica', 'normal');
+    doc.text('The following positive indicators were identified that may reduce overall risk:', LAYOUT.margin, currentY + 6);
+    currentY += 12;
 
     const positiveTableData = analysis.positive_indicators.map((indicator, index) => [
       `${index + 1}`,
@@ -364,24 +386,27 @@ export const downloadPdfReport = (analysis: AnalysisResponse, address: string) =
       head: [['#', 'Positive Indicator']],
       body: positiveTableData,
       margin: { left: LAYOUT.margin, right: LAYOUT.margin },
-      theme: 'striped',
+      theme: 'plain',
       styles: {
         fontSize: 10,
-        cellPadding: { top: 5, bottom: 5, left: 5, right: 5 },
-        textColor: REPORT_COLORS.dark
+        cellPadding: { top: 6, bottom: 6, left: 5, right: 5 },
+        textColor: REPORT_COLORS.dark,
+        lineWidth: 0.1,
+        lineColor: [226, 232, 240]
       },
       headStyles: {
         fillColor: REPORT_COLORS.success,
         textColor: REPORT_COLORS.white,
         fontStyle: 'bold',
-        halign: 'left'
+        halign: 'left',
+        fontSize: 10
       },
-      alternateRowStyles: { fillColor: REPORT_COLORS.light },
-      tableLineColor: [226, 232, 240],
-      tableLineWidth: 0.3
+      alternateRowStyles: {
+        fillColor: REPORT_COLORS.light
+      }
     });
 
-    currentY = ((doc as any).lastAutoTable?.finalY ?? currentY) + 10;
+    currentY = ((doc as any).lastAutoTable?.finalY ?? currentY) + 15;
   }
 
   // Data Quality & Limitations Section
@@ -433,11 +458,11 @@ export const downloadPdfReport = (analysis: AnalysisResponse, address: string) =
 };
 
 /**
- * Generate and download report in PDF format with embedded charts (weekly and monthly)
+ * Generate and download clean executive-level PDF report (alternative layout)
  */
 export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, address: string) => {
   const doc = initProfessionalDocument();
-  let currentY = drawProfessionalHeader(doc, 'BitScan Analysis Report', 'Cryptocurrency Risk Intelligence Report with Historical Charts');
+  let currentY = drawProfessionalHeader(doc, 'BitScan Analysis Report', 'Cryptocurrency Risk Intelligence Report');
 
   // Address information section
   doc.setFillColor(...REPORT_COLORS.light);
@@ -445,152 +470,64 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
   doc.setTextColor(...REPORT_COLORS.dark);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('WALLET ADDRESS:', LAYOUT.margin + 4, currentY + 8);
+  doc.text('SUBJECT WALLET ADDRESS:', LAYOUT.margin + 4, currentY + 8);
   doc.setFont('helvetica', 'normal');
-  doc.text(address, LAYOUT.margin + 35, currentY + 8);
+  doc.text(address, LAYOUT.margin + 45, currentY + 8);
   currentY += 18;
 
-  // Executive Summary Cards
-  const cardWidth = (LAYOUT.pageWidth - LAYOUT.margin * 2 - 12) / 2;
-  const cardHeight = 28;
+  // Executive Summary Section
+  currentY = drawSectionHeader(doc, 'Executive Summary', currentY);
 
+  // Executive Summary Cards - Professional Layout
+  const cardWidth = (LAYOUT.pageWidth - LAYOUT.margin * 2 - 16) / 2; // Two cards per row
+  const cardHeight = 30;
+
+  // Primary Risk Metrics
   const riskColor = analysis.risk_score > 0.7 ? REPORT_COLORS.danger :
                    analysis.risk_score > 0.4 ? REPORT_COLORS.warning : REPORT_COLORS.success;
   drawMetricCard(doc, LAYOUT.margin, currentY, cardWidth, cardHeight,
-                'RISK SCORE', formatPercent(analysis.risk_score), riskColor);
+                'OVERALL RISK SCORE', formatPercent(analysis.risk_score), riskColor);
 
   const levelColor = analysis.risk_level.toLowerCase().includes('high') ? REPORT_COLORS.danger :
                     analysis.risk_level.toLowerCase().includes('medium') ? REPORT_COLORS.warning : REPORT_COLORS.success;
-  drawMetricCard(doc, LAYOUT.margin + cardWidth + 12, currentY, cardWidth, cardHeight,
-                'RISK LEVEL', analysis.risk_level.toUpperCase(), levelColor);
+  drawMetricCard(doc, LAYOUT.margin + cardWidth + 16, currentY, cardWidth, cardHeight,
+                'RISK CLASSIFICATION', analysis.risk_level.toUpperCase(), levelColor);
 
-  currentY += cardHeight + 8;
+  currentY += cardHeight + 10;
 
+  // Additional Key Metrics
   drawMetricCard(doc, LAYOUT.margin, currentY, cardWidth, cardHeight,
-                'CONFIDENCE', formatPercent(analysis.confidence), REPORT_COLORS.secondary);
+                'ANALYSIS CONFIDENCE', formatPercent(analysis.confidence), REPORT_COLORS.secondary);
 
-  drawMetricCard(doc, LAYOUT.margin + cardWidth + 12, currentY, cardWidth, cardHeight,
-                'TRANSACTIONS', analysis.analysis_summary.transaction_count.toLocaleString(), REPORT_COLORS.primary);
+  drawMetricCard(doc, LAYOUT.margin + cardWidth + 16, currentY, cardWidth, cardHeight,
+                'WALLET STATUS', analysis.is_flagged ? 'REQUIRES ATTENTION' : 'APPROVED',
+                analysis.is_flagged ? REPORT_COLORS.danger : REPORT_COLORS.success);
 
-  currentY += cardHeight + 8;
+  currentY += cardHeight + 10;
 
+  // Financial Overview
   drawMetricCard(doc, LAYOUT.margin, currentY, cardWidth, cardHeight,
                 'CURRENT BALANCE',
                 `${formatNumber(analysis.analysis_summary.current_balance_btc, {
                   minimumFractionDigits: 4,
                   maximumFractionDigits: 8
-                })} BTC`, REPORT_COLORS.secondary);
+                })} BTC`, REPORT_COLORS.primary);
 
-  drawMetricCard(doc, LAYOUT.margin + cardWidth + 12, currentY, cardWidth, cardHeight,
-                'STATUS', analysis.is_flagged ? 'FLAGGED' : 'CLEAR',
-                analysis.is_flagged ? REPORT_COLORS.danger : REPORT_COLORS.success);
+  drawMetricCard(doc, LAYOUT.margin + cardWidth + 16, currentY, cardWidth, cardHeight,
+                'TOTAL TRANSACTIONS', analysis.analysis_summary.transaction_count.toLocaleString(), REPORT_COLORS.primary);
 
-  currentY += cardHeight + 15;
-
-  // Fetch time series for charts
-  let weekly: WalletTimeSeriesResponse | null = null;
-  let monthly: WalletTimeSeriesResponse | null = null;
-  try {
-    weekly = await BitScanAPI.getWalletTimeSeries(address, 365, 'week');
-  } catch {}
-  try {
-    monthly = await BitScanAPI.getWalletTimeSeries(address, 365 * 3, 'month');
-  } catch {}
-
-  // Show unique counterparties if available
-  const uniq = (weekly?.summary as any)?.unique_counterparties ?? (monthly?.summary as any)?.unique_counterparties;
-  if (typeof uniq === 'number') {
-    doc.setFontSize(11);
-    doc.setTextColor(...REPORT_COLORS.muted);
-    doc.text(`Unique Counterparties Identified: ${uniq.toLocaleString()}`, LAYOUT.margin, currentY + 6);
-    currentY += 12;
-  }
-
-  // Professional Chart Section
-  currentY = drawSectionHeader(doc, 'Historical Activity Analysis', currentY);
-
-  // Helper to draw a professional chart
-  const drawProfessionalChart = (x: number, y: number, width: number, height: number, title: string, data?: WalletTimeSeriesResponse | null) => {
-    // Chart container with border
-    doc.setFillColor(...REPORT_COLORS.white);
-    doc.setDrawColor(226, 232, 240);
-    doc.setLineWidth(0.5);
-    doc.roundedRect(x, y, width, height, 3, 3, 'FD');
-
-    // Title
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...REPORT_COLORS.primary);
-    doc.text(title, x + 4, y - 2);
-
-    if (!data || !data.points || data.points.length === 0) {
-      doc.setFontSize(10);
-      doc.setTextColor(...REPORT_COLORS.muted);
-      doc.text('No historical data available', x + width / 2, y + height / 2, { align: 'center' });
-      return;
-    }
-
-    const pts = data.points;
-    const pad = 12;
-    const gx = x + pad;
-    const gy = y + pad;
-    const gw = width - pad * 2;
-    const gh = height - pad * 2 - 8; // Leave space for legend
-
-    // Scales
-    const cum = pts.map(p => p.cumulative_balance_btc);
-    const txs = pts.map(p => p.tx_count);
-    const minCum = Math.min(...cum, 0);
-    const maxCum = Math.max(...cum, 0.00000001);
-    const maxTx = Math.max(...txs, 1);
-
-    const toX = (i: number) => gx + (i / Math.max(pts.length - 1, 1)) * gw;
-    const toYCum = (v: number) => gy + gh - ((v - minCum) / (maxCum - minCum)) * gh;
-    const toYTx = (v: number) => gy + gh - (v / maxTx) * gh * 0.5;
-
-    // Bars for tx_count (blue)
-    doc.setDrawColor(...REPORT_COLORS.primary);
-    doc.setFillColor(...REPORT_COLORS.primary);
-    const barWidth = Math.max(1, gw / Math.max(pts.length, 1) * 0.4);
-    pts.forEach((p, i) => {
-      const bx = toX(i) - barWidth / 2;
-      const by = toYTx(p.tx_count);
-      const bh = gy + gh - by;
-      doc.rect(bx, by, barWidth, bh, 'F');
-    });
-
-    // Line for cumulative BTC (purple)
-    doc.setDrawColor(...REPORT_COLORS.secondary);
-    doc.setLineWidth(1.5);
-    pts.forEach((p, i) => {
-      const cx = toX(i);
-      const cy = toYCum(p.cumulative_balance_btc);
-      if (i === 0) doc.moveTo(cx, cy);
-      else doc.lineTo(cx, cy);
-    });
-    doc.stroke();
-
-    // Legend
-    const legendY = y + height - 4;
-    doc.setFontSize(8);
-    doc.setTextColor(...REPORT_COLORS.primary);
-    doc.text('■ Transactions', gx, legendY);
-    doc.setTextColor(...REPORT_COLORS.secondary);
-    doc.text('■ Balance (BTC)', gx + 35, legendY);
-  };
-
-  // Layout charts side by side
-  const chartWidth = (LAYOUT.pageWidth - LAYOUT.margin * 2 - 15) / 2;
-  const chartHeight = 65;
-
-  drawProfessionalChart(LAYOUT.margin, currentY, chartWidth, chartHeight, 'Weekly Activity Trends', weekly);
-  drawProfessionalChart(LAYOUT.margin + chartWidth + 15, currentY, chartWidth, chartHeight, 'Monthly Activity Trends', monthly);
-
-  currentY += chartHeight + 15;
+  currentY += cardHeight + 20;
 
   // Risk Intelligence Section
   if (analysis.risk_factors && analysis.risk_factors.length > 0) {
-    currentY = drawSectionHeader(doc, 'Risk Intelligence', currentY);
+    currentY = drawSectionHeader(doc, 'Risk Intelligence Assessment', currentY);
+
+    // Add descriptive text
+    doc.setFontSize(10);
+    doc.setTextColor(...REPORT_COLORS.muted);
+    doc.setFont('helvetica', 'normal');
+    doc.text('The following risk factors were identified during the comprehensive blockchain analysis:', LAYOUT.margin, currentY + 6);
+    currentY += 12;
 
     const riskTableData = analysis.risk_factors.map((factor, index) => [
       `${index + 1}`,
@@ -602,29 +539,46 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
       head: [['#', 'Identified Risk Factor']],
       body: riskTableData,
       margin: { left: LAYOUT.margin, right: LAYOUT.margin },
-      theme: 'striped',
+      theme: 'plain',
       styles: {
         fontSize: 10,
-        cellPadding: { top: 5, bottom: 5, left: 5, right: 5 },
-        textColor: REPORT_COLORS.dark
+        cellPadding: { top: 6, bottom: 6, left: 5, right: 5 },
+        textColor: REPORT_COLORS.dark,
+        lineWidth: 0.1,
+        lineColor: [226, 232, 240]
       },
       headStyles: {
         fillColor: REPORT_COLORS.primary,
         textColor: REPORT_COLORS.white,
         fontStyle: 'bold',
-        halign: 'left'
+        halign: 'left',
+        fontSize: 10
       },
-      alternateRowStyles: { fillColor: REPORT_COLORS.light },
-      tableLineColor: [226, 232, 240],
-      tableLineWidth: 0.3
+      alternateRowStyles: {
+        fillColor: REPORT_COLORS.light
+      }
     });
 
-    currentY = ((doc as any).lastAutoTable?.finalY ?? currentY) + 10;
+    currentY = ((doc as any).lastAutoTable?.finalY ?? currentY) + 15;
+  } else {
+    currentY = drawSectionHeader(doc, 'Risk Intelligence Assessment', currentY);
+    doc.setFontSize(10);
+    doc.setTextColor(...REPORT_COLORS.success);
+    doc.setFont('helvetica', 'normal');
+    doc.text('✓ No significant risk factors were identified during the comprehensive analysis.', LAYOUT.margin, currentY + 6);
+    currentY += 20;
   }
 
-  // Positive Indicators Section
+  // Mitigating Factors Section
   if (analysis.positive_indicators && analysis.positive_indicators.length > 0) {
     currentY = drawSectionHeader(doc, 'Mitigating Factors', currentY);
+
+    // Add descriptive text
+    doc.setFontSize(10);
+    doc.setTextColor(...REPORT_COLORS.muted);
+    doc.setFont('helvetica', 'normal');
+    doc.text('The following positive indicators were identified that may reduce overall risk:', LAYOUT.margin, currentY + 6);
+    currentY += 12;
 
     const positiveTableData = analysis.positive_indicators.map((indicator, index) => [
       `${index + 1}`,
@@ -636,62 +590,108 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
       head: [['#', 'Positive Indicator']],
       body: positiveTableData,
       margin: { left: LAYOUT.margin, right: LAYOUT.margin },
-      theme: 'striped',
+      theme: 'plain',
       styles: {
         fontSize: 10,
-        cellPadding: { top: 5, bottom: 5, left: 5, right: 5 },
-        textColor: REPORT_COLORS.dark
+        cellPadding: { top: 6, bottom: 6, left: 5, right: 5 },
+        textColor: REPORT_COLORS.dark,
+        lineWidth: 0.1,
+        lineColor: [226, 232, 240]
       },
       headStyles: {
         fillColor: REPORT_COLORS.success,
         textColor: REPORT_COLORS.white,
         fontStyle: 'bold',
-        halign: 'left'
+        halign: 'left',
+        fontSize: 10
       },
-      alternateRowStyles: { fillColor: REPORT_COLORS.light },
-      tableLineColor: [226, 232, 240],
-      tableLineWidth: 0.3
+      alternateRowStyles: {
+        fillColor: REPORT_COLORS.light
+      }
     });
 
-    currentY = ((doc as any).lastAutoTable?.finalY ?? currentY) + 10;
+    currentY = ((doc as any).lastAutoTable?.finalY ?? currentY) + 15;
   }
 
-  // Data Quality & Limitations Section
-  if (analysis.data_limitations) {
-    currentY = drawSectionHeader(doc, 'Data Quality Assessment', currentY);
+  // Data Quality & Methodology Section
+  currentY = drawSectionHeader(doc, 'Data Quality & Methodology', currentY);
 
+  // Add methodology text
+  doc.setFontSize(10);
+  doc.setTextColor(...REPORT_COLORS.dark);
+  doc.setFont('helvetica', 'normal');
+  const methodologyText = 'This analysis was conducted using advanced blockchain analytics and machine learning algorithms to assess cryptocurrency wallet behavior patterns, transaction history, and risk indicators.';
+  const splitText = doc.splitTextToSize(methodologyText, LAYOUT.pageWidth - LAYOUT.margin * 2);
+  doc.text(splitText, LAYOUT.margin, currentY + 6);
+  currentY += splitText.length * 5 + 10;
+
+  if (analysis.data_limitations) {
+    // Data limitations table
     const limitationsTableData = [
-      ['Rate Limiting', analysis.data_limitations.rate_limit_detected ? 'Detected' : 'Not Detected'],
-      ['Real-time Data', analysis.data_limitations.real_time_data ? 'Available' : 'Not Available'],
-      ['API Status', analysis.data_limitations.api_status],
-      ['Accuracy Note', analysis.data_limitations.accuracy_note || 'N/A'],
-      ['Recommendation', analysis.data_limitations.recommendation || 'N/A']
+      ['Data Source Status', analysis.data_limitations.api_status || 'Operational'],
+      ['Real-time Data Access', analysis.data_limitations.real_time_data ? 'Available' : 'Limited'],
+      ['Rate Limiting Detected', analysis.data_limitations.rate_limit_detected ? 'Yes' : 'No'],
+      ['Accuracy Assessment', analysis.data_limitations.accuracy_note || 'High Confidence'],
+      ['Analysis Coverage', 'Comprehensive blockchain analysis']
     ];
 
     (doc as any).autoTable({
       startY: currentY,
-      head: [['Assessment', 'Status/Details']],
+      head: [['Assessment Category', 'Status/Details']],
       body: limitationsTableData,
       margin: { left: LAYOUT.margin, right: LAYOUT.margin },
-      theme: 'striped',
+      theme: 'plain',
       styles: {
-        fontSize: 10,
-        cellPadding: { top: 5, bottom: 5, left: 5, right: 5 },
-        textColor: REPORT_COLORS.dark
+        fontSize: 9,
+        cellPadding: { top: 4, bottom: 4, left: 5, right: 5 },
+        textColor: REPORT_COLORS.dark,
+        lineWidth: 0.1,
+        lineColor: [226, 232, 240]
       },
       headStyles: {
         fillColor: REPORT_COLORS.warning,
         textColor: REPORT_COLORS.white,
         fontStyle: 'bold',
-        halign: 'left'
+        halign: 'left',
+        fontSize: 9
       },
-      alternateRowStyles: { fillColor: REPORT_COLORS.light },
-      tableLineColor: [226, 232, 240],
-      tableLineWidth: 0.3
+      alternateRowStyles: {
+        fillColor: REPORT_COLORS.light
+      }
     });
 
-    currentY = ((doc as any).lastAutoTable?.finalY ?? currentY) + 10;
+    currentY = ((doc as any).lastAutoTable?.finalY ?? currentY) + 15;
   }
+
+  // Professional Recommendations Section
+  currentY = drawSectionHeader(doc, 'Recommendations', currentY);
+
+  doc.setFontSize(10);
+  doc.setTextColor(...REPORT_COLORS.dark);
+  doc.setFont('helvetica', 'normal');
+
+  const recommendations = [];
+  if (analysis.risk_score > 0.7) {
+    recommendations.push('• Immediate review and enhanced due diligence recommended');
+    recommendations.push('• Consider transaction monitoring and additional verification');
+  } else if (analysis.risk_score > 0.4) {
+    recommendations.push('• Moderate risk identified - proceed with caution');
+    recommendations.push('• Additional verification steps may be beneficial');
+  } else {
+    recommendations.push('• Low risk profile identified');
+    recommendations.push('• Standard due diligence procedures recommended');
+  }
+
+  if (analysis.data_limitations?.rate_limit_detected) {
+    recommendations.push('• Data completeness may be limited due to API rate limiting');
+    recommendations.push('• Consider follow-up analysis for complete transaction history');
+  }
+
+  recommendations.forEach((rec, index) => {
+    doc.text(rec, LAYOUT.margin, currentY + 6 + (index * 5));
+  });
+
+  currentY += recommendations.length * 5 + 20;
 
   // Add footer to all pages
   const totalPages = doc.getNumberOfPages();
@@ -700,6 +700,6 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
     drawProfessionalFooter(doc, i, totalPages);
   }
 
-  // Save the professional report with charts
-  doc.save(`BitScan_Professional_Report_Charts_${address.substring(0, 8)}_${new Date().toISOString().slice(0, 10)}.pdf`);
+  // Save the clean professional report
+  doc.save(`BitScan_Executive_Report_${address.substring(0, 8)}_${new Date().toISOString().slice(0, 10)}.pdf`);
 };

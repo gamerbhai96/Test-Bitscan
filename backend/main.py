@@ -41,6 +41,7 @@ from fastapi.middleware.cors import CORSMiddleware
 allowed_origins = [
     "https://test-bitscan.vercel.app",
     "https://www.test-bitscan.vercel.app",
+    "https://test-bitscan-dz2g22t91-nagbhushan-hegdes-projects.vercel.app",
     "http://localhost:5173",
 ]
 
