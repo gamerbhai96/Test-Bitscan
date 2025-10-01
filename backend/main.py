@@ -40,7 +40,8 @@ from fastapi.middleware.cors import CORSMiddleware
 # List all allowed frontend URLs
 allowed_origins = [
     "https://test-bitscan.vercel.app",
-    "https://www.test-bitscan.vercel.app",  # in case you use www
+    "https://www.test-bitscan.vercel.app",
+    "http://localhost:5173",
 ]
 
 app.add_middleware(

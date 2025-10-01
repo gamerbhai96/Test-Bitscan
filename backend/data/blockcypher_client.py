@@ -39,7 +39,7 @@ class BlockCypherClient:
             self.base_url = "https://api.blockcypher.com/v1/btc/main"
             logger.debug("Using BlockCypher mainnet API")
             
-        self.rate_limit_delay = 2.0  # Increased delay for better reliability
+        self.rate_limit_delay = 1.0  # Reduced delay for better responsiveness
         self.last_request_time = 0
         self.request_count = 0
         self.max_requests_per_minute = 15  # More conservative rate limiting
@@ -48,9 +48,27 @@ class BlockCypherClient:
         self.hour_start_time = time.time()
         self.cache = {}  # Simple caching to reduce API calls
         self.cache_ttl = 900  # 15 minutes cache TTL for better data freshness
+        self.cache_stats = {'hits': 0, 'misses': 0}  # Cache performance tracking
         
+    async def _make_request_with_retry(self, endpoint: str, params: Dict = None, max_retries: int = 3) -> Dict:
+        """Make request with exponential backoff retry mechanism"""
+        for attempt in range(max_retries):
+            try:
+                return await self._make_request(endpoint, params)
+            except Exception as e:
+                if attempt == max_retries - 1:  # Last attempt
+                    logger.error(f"Final attempt failed for {endpoint}: {e}")
+                    raise
+
+                # Exponential backoff: wait 2^attempt seconds
+                wait_time = 2 ** attempt
+                logger.warning(f"Request failed (attempt {attempt + 1}/{max_retries}), retrying in {wait_time}s: {e}")
+                await asyncio.sleep(wait_time)
+
+        # This should never be reached, but just in case
+        raise Exception(f"Failed after {max_retries} attempts")
+
     async def _make_request(self, endpoint: str, params: Dict = None) -> Dict:
-        """Make rate-limited request to BlockCypher API with enhanced protection and caching"""
         
         # Check cache first for faster responses
         cache_key = f"{endpoint}_{str(params)}"
@@ -59,11 +77,14 @@ class BlockCypherClient:
             # Use cache for configured TTL to improve data freshness
             if time.time() - cache_time < self.cache_ttl:
                 logger.debug(f"Using cached data for {endpoint} (age: {time.time() - cache_time:.1f}s)")
+                self.cache_stats['hits'] += 1
                 return cached_data
             else:
                 # Remove expired cache entry
                 del self.cache[cache_key]
                 logger.debug(f"Cache expired for {endpoint}, fetching fresh data")
+        else:
+            self.cache_stats['misses'] += 1
         
         # Enhanced rate limiting with exponential backoff
         current_time = time.time()
@@ -90,16 +111,15 @@ class BlockCypherClient:
         if time_since_last < self.rate_limit_delay:
             await asyncio.sleep(self.rate_limit_delay - time_since_last)
         
-        # Additional protection against overwhelming the API
         self.request_count += 1
         self.hourly_request_count += 1
         
         logger.debug(f"API Request #{self.request_count} (hourly: {self.hourly_request_count}/200)")
         
-        # Reduced aggressive delays - only add extra delay every 5 requests
-        if self.request_count % 5 == 0 and self.request_count > 0:  # Every 5 requests
-            await asyncio.sleep(2.0)  # 2 second delay instead of 3
-            logger.debug(f"Added extra 2s delay after {self.request_count} requests")
+        # Reduced aggressive delays - only add extra delay every 10 requests
+        if self.request_count % 10 == 0 and self.request_count > 0:  # Every 10 requests
+            await asyncio.sleep(1.0)  # 1 second delay instead of 2
+            logger.debug(f"Added extra 1s delay after {self.request_count} requests")
         
         url = f"{self.base_url}{endpoint}"
         
@@ -113,7 +133,7 @@ class BlockCypherClient:
         else:
             logger.debug(f"Making API request to {url} without token")
             
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             try:
                 response = await client.get(url, params=params)
                 response.raise_for_status()
@@ -169,7 +189,7 @@ class BlockCypherClient:
     async def get_address_info(self, address: str) -> Dict:
         """Get comprehensive address information with enhanced rate limit handling"""
         try:
-            response = await self._make_request(f"/addrs/{address}")
+            response = await self._make_request_with_retry(f"/addrs/{address}")
             
             # Handle rate limit response
             if isinstance(response, dict) and response.get('error') == 'rate_limit_exceeded':
@@ -242,7 +262,7 @@ class BlockCypherClient:
             
             # Try primary endpoint first
             try:
-                response = await self._make_request(f"/addrs/{address}/txs", params)
+                response = await self._make_request_with_retry(f"/addrs/{address}/txs", params)
                 
                 if response and 'txs' in response:
                     logger.debug(f"Primary endpoint successful for {address}: {len(response.get('txs', []))} transactions")
@@ -260,7 +280,7 @@ class BlockCypherClient:
             # Fallback method: try full endpoint
             logger.info(f"Trying fallback /full endpoint for {address}")
             try:
-                response = await self._make_request(f"/addrs/{address}/full", params)
+                response = await self._make_request_with_retry(f"/addrs/{address}/full", params)
                 
                 if response and 'txs' in response:
                     logger.info(f"Fallback successful for {address}: {len(response.get('txs', []))} transactions")
@@ -294,7 +314,7 @@ class BlockCypherClient:
             effective_limit = min(limit, 10000)
             params = {'limit': effective_limit, 'includeHex': 'false'}
             
-            response = await self._make_request(f"/addrs/{address}/full", params)
+            response = await self._make_request_with_retry(f"/addrs/{address}/full", params)
             
             # Handle empty response (404 case)
             if response == {}:

@@ -192,6 +192,107 @@ async def check_rate_limit_status():
             "message": f"Error checking rate limit: {str(e)}"
         }
 
+@router.get("/api-health", tags=["Health"])
+async def api_health_check():
+    """Enhanced health check with API status and cache performance"""
+    try:
+        initialize_services()
+
+        # Test BlockCypher API connectivity
+        api_status = "unknown"
+        api_response_time = None
+        rate_limit_info = None
+
+        try:
+            import time
+            start_time = time.time()
+            test_result = await blockcypher_client.get_address_info("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa")
+            api_response_time = round((time.time() - start_time) * 1000, 2)
+
+            if 'error' in test_result:
+                if test_result.get('error') == 'rate_limit_exceeded':
+                    api_status = "rate_limited"
+                    rate_limit_info = test_result
+                else:
+                    api_status = "error"
+            else:
+                api_status = "healthy"
+        except Exception as e:
+            api_status = "error"
+            logger.error(f"API health check failed: {e}")
+
+        # Get cache statistics if available
+        cache_stats = None
+        if hasattr(blockcypher_client, 'cache_stats'):
+            cache_stats = blockcypher_client.cache_stats.copy()
+            total_requests = cache_stats['hits'] + cache_stats['misses']
+            cache_hit_rate = (cache_stats['hits'] / total_requests * 100) if total_requests > 0 else 0
+            cache_stats['hit_rate_percent'] = round(cache_hit_rate, 2)
+
+        # System resource info
+        try:
+            import psutil
+            import os
+
+            process = psutil.Process(os.getpid())
+            memory_usage = process.memory_info().rss / 1024 / 1024  # MB
+
+            health_data = {
+                "status": "healthy" if api_status == "healthy" else "degraded",
+                "timestamp": datetime.now().isoformat(),
+                "services": {
+                    "blockchain_analyzer": blockchain_analyzer is not None,
+                    "fraud_detector": fraud_detector is not None,
+                    "blockcypher_client": blockcypher_client is not None
+                },
+                "api_status": {
+                    "status": api_status,
+                    "response_time_ms": api_response_time,
+                    "rate_limit_info": rate_limit_info
+                },
+                "cache_performance": cache_stats,
+                "system_resources": {
+                    "memory_usage_mb": round(memory_usage, 2),
+                    "cpu_percent": psutil.cpu_percent(interval=0.1),
+                    "uptime_seconds": time.time() - psutil.boot_time()
+                },
+                "request_stats": {
+                    "total_requests": getattr(blockcypher_client, 'request_count', 0),
+                    "hourly_requests": getattr(blockcypher_client, 'hourly_request_count', 0),
+                    "hourly_limit": 200
+                }
+            }
+        except ImportError:
+            # psutil not available
+            health_data = {
+                "status": "healthy" if api_status == "healthy" else "degraded",
+                "timestamp": datetime.now().isoformat(),
+                "services": {
+                    "blockchain_analyzer": blockchain_analyzer is not None,
+                    "fraud_detector": fraud_detector is not None,
+                    "blockcypher_client": blockcypher_client is not None
+                },
+                "api_status": {
+                    "status": api_status,
+                    "response_time_ms": api_response_time,
+                    "rate_limit_info": rate_limit_info
+                },
+                "cache_performance": cache_stats,
+                "note": "System resource monitoring not available (psutil not installed)"
+            }
+
+        # Return appropriate status code
+        status_code = 200 if health_data["status"] == "healthy" else 503
+
+        return JSONResponse(
+            status_code=status_code,
+            content=health_data
+        )
+
+    except Exception as e:
+        logger.error(f"Enhanced health check failed: {e}")
+        raise HTTPException(status_code=503, detail=f"Health check error: {str(e)}")
+
 @router.get("/health", tags=["Health"])
 async def health_check():
     """Health check endpoint"""
