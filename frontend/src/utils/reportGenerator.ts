@@ -168,23 +168,28 @@ const drawMetricCard = (
 };
 
 /**
- * Draw a professional section header
+ * Draw a professional section header with enhanced styling
  */
 const drawSectionHeader = (doc: jsPDF, title: string, y: number): number => {
   const { margin, pageWidth } = LAYOUT;
 
-  // Section title
+  // Section title with enhanced styling
   doc.setTextColor(...REPORT_COLORS.primary);
-  doc.setFontSize(14);
+  doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text(title, margin, y + 2);
+  doc.text(title, margin, y + 3);
 
-  // Underline
+  // Professional underline with gradient effect
   doc.setDrawColor(...REPORT_COLORS.primary);
-  doc.setLineWidth(0.8);
-  doc.line(margin, y + 6, Math.min(margin + 40, pageWidth - margin), y + 6);
+  doc.setLineWidth(1.0);
+  doc.line(margin, y + 8, Math.min(margin + 45, pageWidth - margin), y + 8);
 
-  return y + 12;
+  // Subtle secondary line for depth
+  doc.setDrawColor(59, 130, 246, 0.3); // Lighter blue with alpha
+  doc.setLineWidth(0.5);
+  doc.line(margin, y + 10, Math.min(margin + 35, pageWidth - margin), y + 10);
+
+  return y + 15;
 };
 
 /**
@@ -198,47 +203,49 @@ const formatBitcoinAddress = (address: string, maxLength: number = 40): string =
 };
 
 /**
- * Draw wallet address section with proper formatting
+ * Draw wallet address section with proper formatting and professional spacing
  */
 const drawWalletAddressSection = (doc: jsPDF, address: string, label: string, currentY: number): number => {
   const { margin, pageWidth } = LAYOUT;
 
-  // Address background box
-  doc.setFillColor(...REPORT_COLORS.light);
-  doc.roundedRect(margin, currentY, pageWidth - margin * 2, 15, 3, 3, 'F');
+  // Professional background box with subtle styling
+  doc.setFillColor(248, 250, 252); // Very light gray
+  doc.setDrawColor(226, 232, 240); // Light border
+  doc.setLineWidth(0.5);
+  doc.roundedRect(margin, currentY, pageWidth - margin * 2, 18, 4, 4, 'FD');
 
-  // Label
+  // Label with professional typography
   doc.setTextColor(...REPORT_COLORS.primary);
-  doc.setFontSize(11);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text(label, margin + 4, currentY + 10);
+  doc.text(label, margin + 6, currentY + 12);
 
-  // Format and display address
+  // Address with better spacing and formatting
   doc.setTextColor(...REPORT_COLORS.dark);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
 
-  const maxAddressWidth = pageWidth - margin * 2 - 60; // Leave space for label
-  const formattedAddress = formatBitcoinAddress(address, 50); // Allow up to 50 chars before truncation
+  const maxAddressWidth = pageWidth - margin * 2 - 90; // More space for label (90px)
+  const formattedAddress = formatBitcoinAddress(address, 55); // Allow up to 55 chars before truncation
 
-  // Check if address fits, if not, split into lines
+  // Check if address fits, if not, split into two lines with better spacing
   const addressWidth = doc.getTextWidth(formattedAddress);
   if (addressWidth <= maxAddressWidth) {
-    doc.text(formattedAddress, margin + 60, currentY + 10);
+    doc.text(formattedAddress, margin + 90, currentY + 12);
   } else {
-    // Split long address into two lines
+    // Split long address into two lines with better line spacing
     const midPoint = Math.floor(formattedAddress.length / 2);
     const firstLine = formattedAddress.substring(0, midPoint);
     const secondLine = formattedAddress.substring(midPoint);
 
-    doc.text(firstLine, margin + 60, currentY + 7);
-    doc.text(secondLine, margin + 60, currentY + 13);
+    doc.text(firstLine, margin + 90, currentY + 9);
+    doc.text(secondLine, margin + 90, currentY + 15);
 
-    // Increase height for two-line address
-    return currentY + 20;
+    // Increase height for two-line address with better spacing
+    return currentY + 22;
   }
 
-  return currentY + 18;
+  return currentY + 20;
 };
 
 /**
@@ -334,6 +341,9 @@ export const downloadPdfReport = (analysis: AnalysisResponse, address: string) =
   // Address information section
   currentY = drawWalletAddressSection(doc, address, 'WALLET ADDRESS:', currentY);
 
+  // Add professional spacing before metrics
+  currentY += 8;
+
   // Executive Summary Cards
   const cardWidth = (LAYOUT.pageWidth - LAYOUT.margin * 2 - 12) / 2; // Two cards per row
   const cardHeight = 32; // Increased height for better visual balance
@@ -379,12 +389,12 @@ export const downloadPdfReport = (analysis: AnalysisResponse, address: string) =
   if (analysis.risk_factors && analysis.risk_factors.length > 0) {
     currentY = drawSectionHeader(doc, 'Risk Intelligence Assessment', currentY);
 
-    // Add descriptive text
+    // Add descriptive text with better spacing
     doc.setFontSize(10);
     doc.setTextColor(...REPORT_COLORS.muted);
     doc.setFont('helvetica', 'normal');
     doc.text('The following risk factors were identified during the comprehensive blockchain analysis:', LAYOUT.margin, currentY + 6);
-    currentY += 12;
+    currentY += 14;
 
     const riskTableData = analysis.risk_factors.map((factor, index) => [
       `${index + 1}`,
@@ -527,6 +537,9 @@ export const downloadPdfReportWithCharts = async (analysis: AnalysisResponse, ad
 
   // Address information section
   currentY = drawWalletAddressSection(doc, address, 'SUBJECT WALLET ADDRESS:', currentY);
+
+  // Add professional spacing before summary section
+  currentY += 10;
 
   // Executive Summary Section
   currentY = drawSectionHeader(doc, 'Executive Summary', currentY);
