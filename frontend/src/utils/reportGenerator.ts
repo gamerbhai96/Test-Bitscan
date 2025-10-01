@@ -117,18 +117,6 @@ const drawProfessionalHeader = async (doc: jsPDF, title: string, subtitle: strin
   doc.setFont('helvetica', 'normal');
   doc.text(subtitle, textStartX, LAYOUT.headerHeight / 2 + 6);
 
-  // Minimal date on right
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
-
-  doc.setFontSize(8);
-  doc.setTextColor(220, 230, 255);
-  doc.text(dateStr, pageWidth - margin, LAYOUT.headerHeight / 2, { align: 'right' });
-
   return LAYOUT.headerHeight + 5;
 };
 
