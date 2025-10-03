@@ -35,8 +35,6 @@ import {
   CheckCircle as CheckCircleIcon,
   Speed as SpeedIcon,
   Analytics as AnalyticsIcon,
-  DarkMode,
-  LightMode,
   History as HistoryIcon,
   Clear as ClearIcon,
   Visibility as VisibilityIcon,
@@ -47,8 +45,7 @@ import {
   
 } from '@mui/icons-material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { lightTheme, darkTheme } from './themes';
-import { useTheme } from './hooks';
+import { darkTheme } from './themes';
 import { BitScanAPI } from './services/api';
 import type { AnalysisResponse } from './types/api';
 import { downloadPdfReportWithCharts } from './utils/reportGenerator';
@@ -58,7 +55,7 @@ import WalletCredibilityChart from './components/WalletCredibilityChart';
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {
-  const { isDarkMode, toggleTheme } = useTheme();
+  const isDarkMode = true;
   const [address, setAddress] = useState('');
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -164,17 +161,30 @@ const App: React.FC = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
+      <ThemeProvider theme={darkTheme}>
         <CssBaseline />
 
-        {/* Clean Background without animations */}
+        {/* SecureDApp-style Grid Background */}
         <Box
           sx={{
             minHeight: '100vh',
-            background: isDarkMode
-              ? 'linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #0f1419 100%)'
-              : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%)',
-            position: 'relative'
+            background: '#0a0e27',
+            backgroundImage: `
+              linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+            position: 'relative',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 50%)',
+              pointerEvents: 'none'
+            }
           }}
         >
           <Container maxWidth="lg" sx={{ py: 4, position: 'relative' }}>
@@ -185,30 +195,26 @@ const App: React.FC = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 mb: 6,
-                background: isDarkMode
-                  ? 'rgba(255, 255, 255, 0.05)'
-                  : 'rgba(255, 255, 255, 0.25)',
+                background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(20px)',
                 borderRadius: '20px',
                 p: 3,
                 border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: isDarkMode
-                  ? '0 8px 32px rgba(0, 0, 0, 0.3)'
-                  : '0 8px 32px rgba(102, 126, 234, 0.15)'
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
               }}>
                 {/* Left side - Logo and Title */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar
+                  <Box
+                    component="img"
+                    src="/logo copy.png"
+                    alt="SecureDApp Logo"
                     sx={{
-                      background: 'linear-gradient(45deg, #2563eb 0%, #0891b2 50%, #06b6d4 100%)',
-                      width: 60,
-                      height: 60,
-                      boxShadow: '0 8px 25px rgba(37, 99, 235, 0.4)',
-                      border: '2px solid rgba(255, 255, 255, 0.2)'
+                      width: 100,
+                      height: 100,
+                      objectFit: 'contain',
+                      filter: 'drop-shadow(0 8px 25px rgba(37, 99, 235, 0.4))'
                     }}
-                  >
-                    <SearchIcon sx={{ fontSize: 32, color: 'white' }} />
-                  </Avatar>
+                  />
                   <Box>
                     <Typography
                       variant="h4"
@@ -224,7 +230,7 @@ const App: React.FC = () => {
                         mb: 0.5
                       }}
                     >
-                      BitScan
+                      SecureDApp
                     </Typography>
                     <Typography
                       variant="subtitle1"
@@ -235,7 +241,7 @@ const App: React.FC = () => {
                         opacity: 0.8
                       }}
                     >
-                      Enterprise Bitcoin Security Analytics
+                      BitScan
                     </Typography>
                   </Box>
                 </Box>
@@ -310,28 +316,6 @@ const App: React.FC = () => {
                       </Box>
                     )}
                   </IconButton>
-
-                  {/* Theme Toggle */}
-                  <IconButton
-                    onClick={toggleTheme}
-                    sx={{
-                      background: 'linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%)',
-                      color: 'white',
-                      width: 48,
-                      height: 48,
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: '12px',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%)',
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 20px rgba(156, 39, 176, 0.4)'
-                      },
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    {isDarkMode ? <LightMode sx={{ fontSize: 22 }} /> : <DarkMode sx={{ fontSize: 22 }} />}
-                  </IconButton>
                 </Box>
               </Box>
             </Fade>
@@ -351,9 +335,7 @@ const App: React.FC = () => {
                         p: 3,
                         minWidth: 180,
                         textAlign: 'center',
-                        background: isDarkMode
-                          ? 'rgba(255, 255, 255, 0.05)'
-                          : 'rgba(255, 255, 255, 0.9)',
+                        background: 'rgba(255, 255, 255, 0.05)',
                         backdropFilter: 'blur(10px)',
                         border: '1px solid rgba(255, 255, 255, 0.1)',
                         borderRadius: '12px',
@@ -401,15 +383,11 @@ const App: React.FC = () => {
                     maxWidth: 800,
                     maxHeight: '90vh',
                     width: '100%',
-                    background: isDarkMode 
-                      ? 'rgba(255, 255, 255, 0.08)' 
-                      : 'rgba(255, 255, 255, 0.25)',
+                    background: 'rgba(255, 255, 255, 0.08)',
                     backdropFilter: 'blur(25px)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     borderRadius: '25px',
-                    boxShadow: isDarkMode 
-                      ? '0 25px 50px rgba(0, 0, 0, 0.5)'
-                      : '0 25px 50px rgba(102, 126, 234, 0.3)',
+                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
                     overflow: 'auto'
                   }}>
                     <CardContent sx={{ p: 4, height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -452,7 +430,7 @@ const App: React.FC = () => {
                         </Box>
                       </Box>
                       
-                      <Box sx={{ flex: 1, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '8px', }, '&::-webkit-scrollbar-track': { background: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)', borderRadius: '4px', }, '&::-webkit-scrollbar-thumb': { background: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)', borderRadius: '4px', '&:hover': { background: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)', }, }, }}>
+                      <Box sx={{ flex: 1, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '8px' }, '&::-webkit-scrollbar-track': { background: 'rgba(255, 255, 255, 0.05)', borderRadius: '4px' }, '&::-webkit-scrollbar-thumb': { background: 'rgba(255, 255, 255, 0.2)', borderRadius: '4px', '&:hover': { background: 'rgba(255, 255, 255, 0.3)' } } }}>
                         {scanHistory.length === 0 ? (
                           <Box sx={{ textAlign: 'center', py: 4 }}>
                             <Typography variant="body1" color="text.secondary">
@@ -467,9 +445,7 @@ const App: React.FC = () => {
                                 sx={{
                                   p: 3,
                                   mb: 2,
-                                  background: isDarkMode 
-                                    ? 'rgba(255, 255, 255, 0.05)' 
-                                    : 'rgba(255, 255, 255, 0.8)',
+                                  background: 'rgba(255, 255, 255, 0.05)',
                                   border: '1px solid rgba(255, 255, 255, 0.1)',
                                   borderRadius: '12px',
                                   cursor: 'pointer',
@@ -545,15 +521,11 @@ const App: React.FC = () => {
                     maxWidth: 900,
                     maxHeight: '90vh',
                     width: '100%',
-                    background: isDarkMode 
-                      ? 'rgba(15, 23, 42, 0.95)'
-                      : 'rgba(255, 255, 255, 0.95)',
+                    background: 'rgba(15, 23, 42, 0.95)',
                     backdropFilter: 'blur(25px)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     borderRadius: '25px',
-                    boxShadow: isDarkMode
-                      ? '0 25px 50px rgba(0, 0, 0, 0.5)'
-                      : '0 25px 50px rgba(102, 126, 234, 0.3)',
+                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
                     overflow: 'hidden'
                   }}>
                     <CardContent sx={{ p: 4, height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -572,7 +544,7 @@ const App: React.FC = () => {
                           <CloseIcon />
                         </IconButton>
                       </Box>
-                      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '8px' }, '&::-webkit-scrollbar-track': { background: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)', borderRadius: '4px' }, '&::-webkit-scrollbar-thumb': { background: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)', borderRadius: '4px', '&:hover': { background: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)' } } }}>
+                      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '8px' }, '&::-webkit-scrollbar-track': { background: 'rgba(255, 255, 255, 0.05)', borderRadius: '4px' }, '&::-webkit-scrollbar-thumb': { background: 'rgba(255, 255, 255, 0.2)', borderRadius: '4px', '&:hover': { background: 'rgba(255, 255, 255, 0.3)' } } }}>
                         {[
                           '• Data Collection: We aggregate data from multiple sources including Elliptic, BitcoinHeist, Cryptocurrency Scam DB, BABD-13, and our own curated dataset of suspicious wallets, combined with real-time blockchain data.',
                           '• Feature Extraction: Our system extracts 20+ specialized features including core transaction metrics, ratio features (in/out value ratios), address characteristics, temporal patterns, network topology metrics, and statistical indicators.',
@@ -599,21 +571,15 @@ const App: React.FC = () => {
             <Slide in timeout={1400}>
               <Card sx={{ 
                 mb: 4, 
-                background: isDarkMode 
-                  ? 'rgba(255, 255, 255, 0.08)' 
-                  : 'rgba(255, 255, 255, 0.25)',
+                background: 'rgba(255, 255, 255, 0.08)',
                 backdropFilter: 'blur(25px)',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
                 borderRadius: '25px',
-                boxShadow: isDarkMode 
-                  ? '0 25px 50px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-                  : '0 25px 50px rgba(102, 126, 234, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.3)',
+                boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)',
                 transition: 'all 0.4s ease',
                 '&:hover': {
                   transform: 'translateY(-10px)',
-                  boxShadow: isDarkMode 
-                    ? '0 35px 70px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
-                    : '0 35px 70px rgba(102, 126, 234, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.5)'
+                  boxShadow: '0 35px 70px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
                 }
               }}>
                 <CardContent sx={{ p: 5 }}>
@@ -639,19 +605,19 @@ const App: React.FC = () => {
                         sx={{
                           '& .MuiOutlinedInput-root': {
                             borderRadius: '20px',
-                            background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.9)',
+                            background: 'rgba(255, 255, 255, 0.08)',
                             backdropFilter: 'blur(15px)',
                             border: '2px solid transparent',
                             backgroundClip: 'padding-box',
                             transition: 'all 0.3s ease',
                             fontSize: '1.1rem',
                             '&:hover': {
-                              background: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 1)',
+                              background: 'rgba(255, 255, 255, 0.12)',
                               transform: 'translateY(-2px)',
                               boxShadow: '0 10px 30px rgba(102, 126, 234, 0.2)'
                             },
                             '&.Mui-focused': {
-                              background: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 1)',
+                              background: 'rgba(255, 255, 255, 0.15)',
                               boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.3)',
                               transform: 'translateY(-2px)'
                             },
@@ -780,7 +746,7 @@ const App: React.FC = () => {
                               fontWeight: 500,
                               borderRadius: '8px',
                               border: `1.5px solid ${sample.color}`,
-                              color: address === sample.addr ? 'white' : sample.color,
+                              color: address === sample.addr ? 'white' : 'text.primary',
                               background: address === sample.addr 
                                 ? sample.color
                                 : 'transparent',
@@ -826,15 +792,11 @@ const App: React.FC = () => {
             {analysis && (
               <Fade in={showResults} timeout={1000}>
                 <Card sx={{ 
-                  background: isDarkMode 
-                    ? 'rgba(255, 255, 255, 0.08)' 
-                    : 'rgba(255, 255, 255, 0.25)',
+                  background: 'rgba(255, 255, 255, 0.08)',
                   backdropFilter: 'blur(25px)',
                   border: '2px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: '25px',
-                  boxShadow: isDarkMode 
-                    ? '0 30px 60px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                    : '0 30px 60px rgba(102, 126, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+                  boxShadow: '0 30px 60px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
                   overflow: 'hidden',
                   position: 'relative',
                   mb: 4,
@@ -921,9 +883,7 @@ const App: React.FC = () => {
                       </Typography>
                       <Paper sx={{
                         p: 3,
-                        background: isDarkMode 
-                          ? 'rgba(255, 255, 255, 0.05)' 
-                          : 'rgba(255, 255, 255, 0.8)',
+                        background: 'rgba(255, 255, 255, 0.05)',
                         border: '1px solid rgba(255, 255, 255, 0.1)',
                         borderRadius: '12px',
                         borderLeft: `4px solid ${getRiskColor(analysis.risk_level)}`
@@ -1161,9 +1121,7 @@ const App: React.FC = () => {
                           sx={{
                             p: 3,
                             textAlign: 'center',
-                            background: isDarkMode 
-                              ? 'rgba(255, 255, 255, 0.06)' 
-                              : 'rgba(255, 255, 255, 0.8)',
+                            background: 'rgba(255, 255, 255, 0.06)',
                             backdropFilter: 'blur(15px)',
                             border: '1px solid rgba(255, 255, 255, 0.2)',
                             borderRadius: '12px',
@@ -1220,15 +1178,11 @@ const App: React.FC = () => {
                     maxWidth: 800,
                     maxHeight: '90vh',
                     width: '100%',
-                    background: isDarkMode 
-                      ? 'rgba(15, 23, 42, 0.95)' 
-                      : 'rgba(255, 255, 255, 0.95)',
+                    background: 'rgba(15, 23, 42, 0.95)',
                     backdropFilter: 'blur(25px)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     borderRadius: '25px',
-                    boxShadow: isDarkMode 
-                      ? '0 25px 50px rgba(0, 0, 0, 0.5)'
-                      : '0 25px 50px rgba(102, 126, 234, 0.3)',
+                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
                     overflow: 'auto'
                   }}>
                     <CardContent sx={{ p: 4, height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -1262,21 +1216,7 @@ const App: React.FC = () => {
                         </Box>
                       </Box>
                       
-                      <Box sx={{ flex: 1, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': {
-                          width: '8px',
-                        },
-                        '&::-webkit-scrollbar-track': {
-                          background: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
-                          borderRadius: '4px',
-                        },
-                        '&::-webkit-scrollbar-thumb': {
-                          background: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                          borderRadius: '4px',
-                          '&:hover': {
-                            background: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
-                          },
-                        },
-                      }} ref={faqContainerRef} id="faq-container">
+                      <Box sx={{ flex: 1, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '8px' }, '&::-webkit-scrollbar-track': { background: 'rgba(255, 255, 255, 0.05)', borderRadius: '4px' }, '&::-webkit-scrollbar-thumb': { background: 'rgba(255, 255, 255, 0.2)', borderRadius: '4px', '&:hover': { background: 'rgba(255, 255, 255, 0.3)' } } }} ref={faqContainerRef} id="faq-container">
                         {/* Dedicated How We Work section is now moved to its own modal */}
                         {[
                           {
@@ -1358,9 +1298,7 @@ const App: React.FC = () => {
                             onChange={( isExpanded) => setExpandedFAQ(isExpanded ? index : false)}
                             sx={{
                               mb: 2,
-                              background: isDarkMode 
-                                ? 'rgba(255, 255, 255, 0.05)' 
-                                : 'rgba(255, 255, 255, 0.8)',
+                              background: 'rgba(255, 255, 255, 0.05)',
                               border: '1px solid rgba(255, 255, 255, 0.1)',
                               borderRadius: '12px !important',
                               '&:before': { display: 'none' },
@@ -1391,7 +1329,7 @@ const App: React.FC = () => {
                                       lineHeight: 1.6,
                                       '& strong': {
                                         fontWeight: 600,
-                                        color: isDarkMode ? '#60a5fa' : '#2563eb'
+                                        color: '#60a5fa'
                                       }
                                     }}
                                     dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}
